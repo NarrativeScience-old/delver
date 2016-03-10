@@ -5,7 +5,7 @@ import os
 execfile('src/__init__.py')
 
 setuptools.setup(
-    name='json_explorer',
+    name='data_explorer',
     version=__version__,
     package_dir={'': 'src'},
     packages=setuptools.find_packages('src'),
