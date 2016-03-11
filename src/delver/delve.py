@@ -85,7 +85,7 @@ class TablePrinter(object):
             zip(self._col_widths, [len(cell) for cell in row])]
 
 
-def explore(obj):
+def delve(obj):
     """Run the event loop which actually explores objects by printing to the
     console and handling key events.
 
@@ -172,7 +172,7 @@ def _get_cli_args():
     :rtype: :py:class:`argparse.Namespace`
     """
     parser = argparse.ArgumentParser(
-        description='Explore JSON payloads from the command line.')
+        description='Delve into JSON payloads from the command line.')
     parser.add_argument(
         'payload', type=argparse.FileType('r'), help='payload file to load')
     parser.add_argument(
@@ -207,7 +207,7 @@ def main():
 
     del payload_str
     my_args.payload.close()
-    explore(payload)
+    delve(payload)
 
 
 if __name__ == '__main__':

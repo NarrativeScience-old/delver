@@ -1,12 +1,12 @@
-=============
-Data Explorer
-=============
+======
+Delver
+======
 
-The ``explore`` command allows for the visual exploration of JSON data from the
+The ``delve`` command allows for the visual exploration of JSON data from the
 command line, with the ability to see the types of data within as well as your
 current location.::
 
-  $  python src/explore.py test_explorer.json
+  $  delve test_delver.json
   -------------------------------------------------------------------------------
   Dict (length 3)
   +-----+--------+------------------------+
@@ -25,7 +25,7 @@ unwieldy/inconvenient.
 Specifying a Data Transform
 ---------------------------
 
-The ``explore`` script allows for the ability to specify a 'transform' step to
+The ``delve`` script allows for the ability to specify a 'transform' step to
 be applied before the data is actually explored. This might be used in the case
 where unwanted fields in the json should be ignored. For example, consider the
 following dataset:
@@ -74,10 +74,10 @@ exploring.
             del company['company_id']
         return payload
 
-To run the ``explore`` command with the transform, just specify the ``transform-func``
+To run the ``delve`` command with the transform, just specify the ``transform-func``
 parameter::
 
-  $  python src/explore.py company_info.json --transform-func transform:remove_company_ids
+  $  delve company_info.json --transform-func transform:remove_company_ids
   -------------------------------------------------------------------------------
   Dict (length 4)
   +-----+----------------------+-------------------------------------------+
@@ -117,10 +117,10 @@ Getting Started
 
 Simply install via ``pip``::
 
-  $  pip install data-explorer
+  $  pip install delver
 
-This exposes the ``explore`` command line script (which corresponds to the
-:py:func:`explore.main` function).
+This exposes the ``delve`` command line script (which corresponds to the
+:py:func:`delver.delve:main` function).
 
 Note that any transform functions should be either installed in the current
 python interpreter's site-packages or should be available in local scope.
