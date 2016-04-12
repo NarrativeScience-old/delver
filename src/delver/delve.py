@@ -29,6 +29,7 @@ and lists).
 import argparse
 import importlib
 import json
+import logging
 import sys
 
 
@@ -203,7 +204,12 @@ def main():
             ":")
         transform_module = importlib.import_module(transform_module_str)
         transform_func = getattr(transform_module, transform_func_str)
-        payload = transform_func(payload)
+        try:
+            payload = transform_func(payload)
+        except:
+            logging.debug(
+                'transform function failed, attempting to delve '
+                'without the transform')
 
     del payload_str
     my_args.payload.close()
