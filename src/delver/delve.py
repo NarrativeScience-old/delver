@@ -53,8 +53,8 @@ class TablePrinter(object):
             for j, cell in enumerate(row):
                 out_row.append(cell.ljust(self._col_widths[j]))
             # Try and fix unicode issues
-            out_row = [unicode(x) for x in out_row]
-            out_rows.append(unicode('| {} |').format(col_sep.join(out_row)))
+            out_row = [str(x) for x in out_row]
+            out_rows.append(str('| {} |').format(col_sep.join(out_row)))
         out_rows.append(self._sep_row())
         return '\n'.join(out_rows)
 
@@ -99,12 +99,12 @@ def delve(obj):
     try:
         while inp != "q":
             table = TablePrinter()
-            print '-' * 79
+            print('-' * 79)
             if len(path) > 0:
-                print 'At path %s' % "->".join(path)
+                print('At path %s' % "->".join(path))
 
             if isinstance(obj, list):
-                print 'List (length %s)' % len(obj)
+                print('List (length %s)' % len(obj))
                 prompt = '[<int>, u, q] --> '
                 table.add_row(('Idx', 'Data'), header=True)
                 for i, value in enumerate(obj):
@@ -116,7 +116,7 @@ def delve(obj):
                         data = value
                     table.add_row((str(i), str(data)))
             elif isinstance(obj, dict):
-                print 'Dict (length %s)' % len(obj)
+                print('Dict (length %s)' % len(obj))
                 prompt = '[<key index>, u, q] --> '
                 keys = sorted(obj.keys())
                 table.add_row(('Idx', 'Key', 'Data'), header=True)
@@ -128,18 +128,18 @@ def delve(obj):
                         data = '<dict, length %s>' % len(value)
                     else:
                         data = value
-                    table.add_row((unicode(i), unicode(key), unicode(data)))
+                    table.add_row((str(i), str(key), str(data)))
             else:
                 table.add_row(('Value',), header=True)
-                table.add_row((unicode(obj),))
+                table.add_row((str(obj),))
                 prompt = '[u, q] --> '
 
-            print(unicode(table))
+            print((str(table)))
 
-            inp = raw_input(prompt)
+            inp = input(prompt)
             if inp == 'u':
                 if len(prev_obj) == 0:
-                    print "Can't go up a level; we're at the top"
+                    print("Can't go up a level; we're at the top")
                 else:
                     obj = prev_obj.pop()
                     path = path[:-1]
@@ -149,7 +149,7 @@ def delve(obj):
                 try:
                     inp = int(inp)
                     if inp >= len(obj):
-                        print "Invalid index"
+                        print("Invalid index")
                         continue
                     if isinstance(obj, list):
                         path.append(str(inp))
