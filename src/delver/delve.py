@@ -26,11 +26,16 @@
 """This is a helpful utility for stepping though nested objects (dictionaries
 and lists).
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import argparse
 import importlib
 import json
 import logging
 import sys
+import six
+from six.moves import zip
+from six.moves import input
 
 
 class TablePrinter(object):
@@ -52,9 +57,9 @@ class TablePrinter(object):
                 out_rows.append(self._sep_row())
             for j, cell in enumerate(row):
                 out_row.append(cell.ljust(self._col_widths[j]))
-            # Try and fix unicode issues
-            out_row = [unicode(x) for x in out_row]
-            out_rows.append(unicode('| {} |').format(col_sep.join(out_row)))
+            out_row = [six.text_type(x) for x in out_row]
+            out_rows.append(
+                six.text_type('| {} |').format(col_sep.join(out_row)))
         out_rows.append(self._sep_row())
         return '\n'.join(out_rows)
 
@@ -99,12 +104,12 @@ def delve(obj):
     try:
         while inp != "q":
             table = TablePrinter()
-            print '-' * 79
+            print(('-' * 79))
             if len(path) > 0:
-                print 'At path %s' % "->".join(path)
+                print(('At path %s' % "->".join(path)))
 
             if isinstance(obj, list):
-                print 'List (length %s)' % len(obj)
+                print(('List (length %s)' % len(obj)))
                 prompt = '[<int>, u, q] --> '
                 table.add_row(('Idx', 'Data'), header=True)
                 for i, value in enumerate(obj):
@@ -114,9 +119,9 @@ def delve(obj):
                         data = '<dict, length %s>' % len(value)
                     else:
                         data = value
-                    table.add_row((str(i), str(data)))
+                    table.add_row((six.text_type(i), six.text_type(data)))
             elif isinstance(obj, dict):
-                print 'Dict (length %s)' % len(obj)
+                print(('Dict (length %s)' % len(obj)))
                 prompt = '[<key index>, u, q] --> '
                 keys = sorted(obj.keys())
                 table.add_row(('Idx', 'Key', 'Data'), header=True)
@@ -128,18 +133,20 @@ def delve(obj):
                         data = '<dict, length %s>' % len(value)
                     else:
                         data = value
-                    table.add_row((unicode(i), unicode(key), unicode(data)))
+                    table.add_row(
+                        (six.text_type(i), six.text_type(key),
+                         six.text_type(data)))
             else:
                 table.add_row(('Value',), header=True)
-                table.add_row((unicode(obj),))
+                table.add_row((six.text_type(obj),))
                 prompt = '[u, q] --> '
 
-            print(unicode(table))
+            print((six.text_type(table)))
 
-            inp = raw_input(prompt)
+            inp = input(str(prompt))
             if inp == 'u':
                 if len(prev_obj) == 0:
-                    print "Can't go up a level; we're at the top"
+                    print("Can't go up a level; we're at the top")
                 else:
                     obj = prev_obj.pop()
                     path = path[:-1]
@@ -149,13 +156,13 @@ def delve(obj):
                 try:
                     inp = int(inp)
                     if inp >= len(obj):
-                        print "Invalid index"
+                        print("Invalid index")
                         continue
                     if isinstance(obj, list):
-                        path.append(str(inp))
+                        path.append(six.text_type(inp))
                     else:
                         inp = keys[inp]
-                        path.append(str(inp))
+                        path.append(six.text_type(inp))
                     prev_obj.append(obj)
                     obj = obj[inp]
                 except ValueError:
@@ -177,7 +184,7 @@ def _get_cli_args():
     parser.add_argument(
         'payload', type=argparse.FileType('r'), help='payload file to load')
     parser.add_argument(
-        '--transform-func', type=str,
+        '--transform-func', type=six.text_type,
         help=(
             'the module containing the optional json transform function, '
             'formatted like: "transform_module:transform_func". Note that the '
@@ -206,7 +213,7 @@ def main():
         transform_func = getattr(transform_module, transform_func_str)
         try:
             payload = transform_func(payload)
-        except:
+        except Exception:
             logging.debug(
                 'transform function failed, attempting to delve '
                 'without the transform')
