@@ -34,8 +34,8 @@ import json
 import logging
 import sys
 import six
-from six.moves import zip
-from six.moves import input
+from six.moves import zip as six_zip
+from six.moves import input as six_input
 
 
 class TablePrinter(object):
@@ -88,7 +88,7 @@ class TablePrinter(object):
 
         self._col_widths = [
             max(*lengths) for lengths in
-            zip(self._col_widths, [len(cell) for cell in row])]
+            six_zip(self._col_widths, [len(cell) for cell in row])]
 
 
 def delve(obj):
@@ -106,31 +106,31 @@ def delve(obj):
             table = TablePrinter()
             print(('-' * 79))
             if len(path) > 0:
-                print(('At path %s' % "->".join(path)))
+                print(('At path {}'.format("->".join(path))))
 
             if isinstance(obj, list):
-                print(('List (length %s)' % len(obj)))
+                print(('List (length {})'.format(len(obj))))
                 prompt = '[<int>, u, q] --> '
                 table.add_row(('Idx', 'Data'), header=True)
                 for i, value in enumerate(obj):
                     if isinstance(value, list):
-                        data = '<list, length %s>' % len(value)
+                        data = '<list, length {}>'.format(len(value))
                     elif isinstance(value, dict):
-                        data = '<dict, length %s>' % len(value)
+                        data = '<dict, length {}>'.format(len(value))
                     else:
                         data = value
                     table.add_row((six.text_type(i), six.text_type(data)))
             elif isinstance(obj, dict):
-                print(('Dict (length %s)' % len(obj)))
+                print(('Dict (length {})'.format(len(obj))))
                 prompt = '[<key index>, u, q] --> '
                 keys = sorted(obj.keys())
                 table.add_row(('Idx', 'Key', 'Data'), header=True)
                 for i, key in enumerate(keys):
                     value = obj[key]
                     if isinstance(value, list):
-                        data = '<list, length %s>' % len(value)
+                        data = '<list, length {}>'.format(len(value))
                     elif isinstance(value, dict):
-                        data = '<dict, length %s>' % len(value)
+                        data = '<dict, length {}>'.format(len(value))
                     else:
                         data = value
                     table.add_row(
@@ -143,7 +143,7 @@ def delve(obj):
 
             print((six.text_type(table)))
 
-            inp = input(str(prompt))
+            inp = six_input(str(prompt))
             if inp == 'u':
                 if len(prev_obj) == 0:
                     print("Can't go up a level; we're at the top")
@@ -205,18 +205,31 @@ def main():
             '"{}" does not contain valid JSON.'.format(my_args.payload.name))
 
     if my_args.transform_func is not None:
-        # We need to try and import the transform func and use that to convert
-        # the payload before exploring
-        transform_module_str, transform_func_str = my_args.transform_func.split(
-            ":")
-        transform_module = importlib.import_module(transform_module_str)
-        transform_func = getattr(transform_module, transform_func_str)
         try:
+            # We need to try and import the transform func and use that to convert
+            # the payload before exploring
+            transform_module_str, transform_func_str = my_args.transform_func.split(
+                ":")
+            transform_module = importlib.import_module(transform_module_str)
+            transform_func = getattr(transform_module, transform_func_str)
             payload = transform_func(payload)
-        except Exception:
-            logging.debug(
-                'transform function failed, attempting to delve '
-                'without the transform')
+        except ImportError:
+            sys.exit(
+                'Unable to import module `{}`. Please adjust the '
+                'transform-func argument and try again.'.format(
+                    transform_module_str))
+        except AttributeError:
+            sys.exit(
+                'Unable to import transform function `{}` '
+                'from module `{}`. Please adjust the transform-func argument '
+                'and try again.'.format(
+                    transform_func_str, transform_module_str))
+        except Exception as error:
+            logging.error(
+                'Performing the transform function failed with the following '
+                'error, please adjust the transform-func argument and try '
+                'again:\n {}.'.format(error))
+            raise error
 
     del payload_str
     my_args.payload.close()
