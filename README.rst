@@ -4,7 +4,7 @@ Delver
 
 The ``delve`` command allows for the visual exploration of JSON data from the
 command line, with the ability to see the types of data within as well as your
-current location.::
+current location::
 
   $  delve test_delver.json
   -------------------------------------------------------------------------------
@@ -18,12 +18,57 @@ current location.::
   +-----+--------+------------------------+
   [<key index>, u, q] -->
 
+This displays the top level keys as well as a description of their values for the
+*test_delver.json* file. A number of input options are printed at the bottom which
+indicate that a user can either:
+
+* Select a *key index* from the available `Idx` values in the column on the left
+* Select *u*
+* Select *q*
+
+Selecting a *key index* will navigate into that value and display information
+about any keys and/or values at that level. For example, selecting 2 would navigate
+into the *teams* object, which we can now see is a list of dictionaries::
+
+  -------------------------------------------------------------------------------
+  At path teams
+  List (length 2)
+  +-----+------------------+
+  | Idx | Data             |
+  +-----+------------------+
+  | 0   | <dict, length 4> |
+  | 1   | <dict, length 4> |
+  +-----+------------------+
+  [<int>, u, q] --> 0
+
+From this point, the user can select *u* to go back **up** one level to the top, or they can
+choose to further delve into the payload by selecting 0::
+
+  -------------------------------------------------------------------------------
+  At path teams->0
+  Dict (length 4)
+  +-----+-------------+------------------+
+  | Idx | Key         | Data             |
+  +-----+-------------+------------------+
+  | 0   | mascot      | TRex             |
+  | 1   | players     | <list, length 6> |
+  | 2   | team symbol | ☃                |
+  | 3   | teamname    | editors          |
+  +-----+-------------+------------------+
+  [<key index>, u, q] -->
+
+At this point, the user can continue navigating using the indices, or enter *q* to exit.
+
+Advanced Features
+-----------------
+
 This tool is typically used to look through large json payloads where seeing
 the entirety of the file in a text editor or on a web page is
-unwieldy/inconvenient.
+unwieldy/inconvenient. The advanced features allow for simplifying payloads or making
+them easier to navigate and explore.
 
 Specifying a Data Transform
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``delve`` script allows for the ability to specify a 'transform' step to
 be applied before the data is actually explored. This might be used in the case
@@ -114,6 +159,18 @@ And now we don't have to see those annoying company ids when exploring our data!
 
 Getting Started
 ---------------
+
+Requirements
+~~~~~~~~~~~~
+
+The ``delve`` tool requires that Python is installed as well as the ``six`` package (taken
+care of via the installation method below), which allows for compatibility between Python 2
+and Python 3.
+
+Specifically, ``delve`` has been tested with Python versions 2.7.8 and 3.4.0.
+
+Installation
+~~~~~~~~~~~~
 
 Simply install via ``pip``::
 
