@@ -15,11 +15,8 @@ class TestDelveFunctional(unittest.TestCase):
         input_patch = mock.patch('delver.delve.six_input')
         self.fake_print = print_patch.start()
         self.fake_input = input_patch.start()
-
-    def cleanUp(self):
-        """Stop the patches"""
-        self.fake_print.stop()
-        self.fake_input.stop()
+        self.addCleanup(print_patch.stop)
+        self.addCleanup(input_patch.stop)
 
     def _extract_print_strings(self, call_args):
         """Extract the actual strings that make up the calls to the patched
