@@ -193,19 +193,6 @@ directory::
 
   $ git clone https://github.com/NarrativeScience/delver.git
 
-Virtualenv Setup
-~~~~~~~~~~~~~~~~
-
-For Python 2, install `virtualenv <https://github.com/pypa/virtualenv>`_ and run the
-following::
-
-  $ virtualenv venv
-
-For Python 3, use the built-in `pyvenv` tool::
-
-  $ pyvenv venv
-
-
 Running Tests
 ~~~~~~~~~~~~~
 
@@ -216,7 +203,8 @@ Install the test requirements::
 
   $ pip install -r test_requirements.txt
 
-If using Python 2, one must call out to the nose command line tool explicitly::
+To test, make sure that nosetests is installed (following the instructions
+in the link above) and call out to the tool explicitly::
 
   $ nosetests tests
   ....
@@ -225,7 +213,8 @@ If using Python 2, one must call out to the nose command line tool explicitly::
 
   OK
 
-Otherwise, if using Python 3.4 or higher, use the built-in `nose` helper module::
+When using Python 3.4 or higher, the built-in `nose` helper module can be
+utilized instead::
 
   $ python -m "nose"
   ....

@@ -7,14 +7,19 @@ from .context import delve as mod_ut
 
 
 class TestDelveFunctional(unittest.TestCase):
-    """Functional tests for the delver tool.
-
-    Note that this method for testing the basic functionality of the tool itself
-    is likely to change
-    """
+    """Functional tests for the delver tool"""
     def setUp(self):
         """Initialize frequently used test objects"""
         self.test_obj = {'foo': ['bar', {'baz': 3}]}
+        print_patch = mock.patch('delver.delve._print')
+        input_patch = mock.patch('delver.delve.six_input')
+        self.fake_print = print_patch.start()
+        self.fake_input = input_patch.start()
+
+    def cleanUp(self):
+        """Stop the patches"""
+        self.fake_print.stop()
+        self.fake_input.stop()
 
     def _extract_print_strings(self, call_args):
         """Extract the actual strings that make up the calls to the patched
@@ -29,11 +34,9 @@ class TestDelveFunctional(unittest.TestCase):
         """
         return [x[0][0] for x in call_args]
 
-    @mock.patch('delver.delve._print')
-    @mock.patch('delver.delve.six_input')
-    def test_single_navigate(self, fake_input, fake_print):
+    def test_single_navigate(self):
         """Test a single navigation and exit"""
-        fake_input.side_effect = [
+        self.fake_input.side_effect = [
             '0',
             'q'
         ]
@@ -58,14 +61,12 @@ class TestDelveFunctional(unittest.TestCase):
         ]
         mod_ut.delve(self.test_obj)
         result_print_args = self._extract_print_strings(
-            fake_print.call_args_list)
+            self.fake_print.call_args_list)
         self.assertListEqual(result_print_args, target_print_args)
 
-    @mock.patch('delver.delve._print')
-    @mock.patch('delver.delve.six_input')
-    def test_invalid_key_index(self, fake_input, fake_print):
+    def test_invalid_key_index(self):
         """Test an invalid index message is displayed"""
-        fake_input.side_effect = [
+        self.fake_input.side_effect = [
             '1',
             'q'
         ]
@@ -90,14 +91,12 @@ class TestDelveFunctional(unittest.TestCase):
 
         mod_ut.delve(self.test_obj)
         result_print_args = self._extract_print_strings(
-            fake_print.call_args_list)
+            self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
 
-    @mock.patch('delver.delve._print')
-    @mock.patch('delver.delve.six_input')
-    def test_invalid_command(self, fake_input, fake_print):
+    def test_invalid_command(self):
         """Test an invalid command message is displayed"""
-        fake_input.side_effect = [
+        self.fake_input.side_effect = [
             'blah',
             'q'
         ]
@@ -121,14 +120,12 @@ class TestDelveFunctional(unittest.TestCase):
             'Bye.'
         ]
         result_print_args = self._extract_print_strings(
-            fake_print.call_args_list)
+            self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
 
-    @mock.patch('delver.delve._print')
-    @mock.patch('delver.delve.six_input')
-    def test_advanced_navigation(self, fake_input, fake_print):
+    def test_advanced_navigation(self):
         """Test navigating deeper into a data structure and back out"""
-        fake_input.side_effect = [
+        self.fake_input.side_effect = [
             '0',
             '1',
             '0',
@@ -187,7 +184,7 @@ class TestDelveFunctional(unittest.TestCase):
             'Bye.'
         ]
         result_print_args = self._extract_print_strings(
-            fake_print.call_args_list)
+            self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
 
 
