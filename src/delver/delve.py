@@ -38,6 +38,9 @@ from six.moves import zip as six_zip
 from six.moves import input as six_input
 
 
+DEFAULT_DIVIDER = '-' * 79
+
+
 class TablePrinter(object):
     """Helper object for printing tables"""
     def __init__(self):
@@ -104,12 +107,12 @@ def delve(obj):
     try:
         while inp != "q":
             table = TablePrinter()
-            print(('-' * 79))
+            _print(DEFAULT_DIVIDER)
             if len(path) > 0:
-                print(('At path {}'.format("->".join(path))))
+                _print(('At path {}'.format("->".join(path))))
 
             if isinstance(obj, list):
-                print(('List (length {})'.format(len(obj))))
+                _print(('List (length {})'.format(len(obj))))
                 prompt = '[<int>, u, q] --> '
                 table.add_row(('Idx', 'Data'), header=True)
                 for i, value in enumerate(obj):
@@ -121,7 +124,7 @@ def delve(obj):
                         data = value
                     table.add_row((six.text_type(i), six.text_type(data)))
             elif isinstance(obj, dict):
-                print(('Dict (length {})'.format(len(obj))))
+                _print(('Dict (length {})'.format(len(obj))))
                 prompt = '[<key index>, u, q] --> '
                 keys = sorted(obj.keys())
                 table.add_row(('Idx', 'Key', 'Data'), header=True)
@@ -141,22 +144,22 @@ def delve(obj):
                 table.add_row((six.text_type(obj),))
                 prompt = '[u, q] --> '
 
-            print((six.text_type(table)))
+            _print((six.text_type(table)))
 
             inp = six_input(str(prompt))
             if inp == 'u':
                 if len(prev_obj) == 0:
-                    print("Can't go up a level; we're at the top")
+                    _print("Can't go up a level; we're at the top")
                 else:
                     obj = prev_obj.pop()
                     path = path[:-1]
             elif inp == 'q':
-                print('Bye.')
+                _print('Bye.')
             else:
                 try:
                     inp = int(inp)
                     if inp >= len(obj):
-                        print("Invalid index")
+                        _print("Invalid index")
                         continue
                     if isinstance(obj, list):
                         path.append(six.text_type(inp))
@@ -166,12 +169,18 @@ def delve(obj):
                     prev_obj.append(obj)
                     obj = obj[inp]
                 except ValueError:
-                    print(
+                    _print(
                         "Invalid command; please specify one of '<key index>'"
                         ", 'u', 'q'")
 
     except (KeyboardInterrupt, EOFError):
-        print('\nBye.')
+        _print('\nBye.')
+
+
+def _print(string):
+    """Wrapper function used to enable testing of printed output strings"""
+    print(string)
+
 
 def _get_cli_args():
     """Parses and returns arguments passed from CLI.

@@ -181,3 +181,44 @@ This exposes the ``delve`` command line script (which corresponds to the
 
 Note that any transform functions should be either installed in the current
 python interpreter's site-packages or should be available in local scope.
+
+
+Development
+-----------
+
+Setting up the development environment varies between python versions. See the
+instructions below for more details on how to get up and running. These instructions
+assume the repo has been cloned locally and that the user is in the top-level
+directory::
+
+  $ git clone https://github.com/NarrativeScience/delver.git
+
+Running Tests
+~~~~~~~~~~~~~
+
+When doing development, the tests can be executed by using
+`nosetests <http://nose.readthedocs.io/en/latest/>`_.
+
+Install the test requirements::
+
+  $ pip install -r test_requirements.txt
+
+To test, make sure that nosetests is installed (following the instructions
+in the link above) and call out to the tool explicitly::
+
+  $ nosetests tests
+  ....
+  ----------------------------------------------------------------------
+  Ran 4 tests in 0.007s
+
+  OK
+
+When using Python 3.4 or higher, the built-in `nose` helper module can be
+utilized instead::
+
+  $ python -m "nose"
+  ....
+  ----------------------------------------------------------------------
+  Ran 4 tests in 0.007s
+
+  OK
