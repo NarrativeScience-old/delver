@@ -11,8 +11,8 @@ class TestDelveFunctional(unittest.TestCase):
     def setUp(self):
         """Initialize frequently used test objects"""
         self.test_obj = {'foo': ['bar', {'baz': 3}]}
-        print_patch = mock.patch('delver.delve._print')
-        input_patch = mock.patch('delver.delve.six_input')
+        print_patch = mock.patch('src.delver.delve._print')
+        input_patch = mock.patch('src.delver.delve.six_input')
         self.fake_print = print_patch.start()
         self.fake_input = input_patch.start()
         self.addCleanup(print_patch.stop)
