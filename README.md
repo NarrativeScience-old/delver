@@ -44,7 +44,7 @@ List (length 2)
 ```
 
 From this point, the user can select *u* to go back **up** one level to the top, or they can
-choose to further delve into the payload by selecting 0:
+further delve by selecting an index. For example if the user selects 0:
 
 ```
 -------------------------------------------------------------------------------
@@ -61,7 +61,8 @@ Dict (length 4)
 [<key index>, u, q] -->
 ```
 
-At this point, the user can continue navigating using the indices, or enter *q* to exit.
+At this point, the user can continue navigating using the indices, return to a higher
+level using *u*, or enter *q* to exit.
 
 # Advanced Features
 
@@ -188,13 +189,16 @@ python interpreter's site-packages or should be available in local scope.
 
 # Development
 
-Setting up the development environment varies between python versions. See the
-instructions below for more details on how to get up and running. These instructions
-assume the repo has been cloned locally and that the user is in the top-level
-directory:
+Setting up the development environment does not vary between python versions. See the
+instructions below for more details on how to get up and running. We welcome pull
+requests on new features or fixes!
+
+Note that these instructions assume the repo has been cloned locally and that
+the user is in the top-level directory:
 
 ```
 $ git clone https://github.com/NarrativeScience/delver.git
+$ cd delver
 ```
 
 ## Running Tests
@@ -209,9 +213,10 @@ $ pip install -r requirements.txt
 $ pip install -r test_requirements.txt
 ```
 
-Testing just involves running the `pytest` command:
+Executing the tests just involves running the `pytest` command:
 
 ```
+$ pytest
 ============================= test session starts ==============================
 platform darwin -- Python 3.4.0, pytest-3.0.3, py-1.4.31, pluggy-0.4.0
 rootdir: /Users/asippel/delver, inifile:
