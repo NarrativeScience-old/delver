@@ -1,7 +1,7 @@
 import six
 from six.moves import input as six_input
 
-from delver.table import TablePrinter, NewTablePrinter
+from delver.table import TablePrinter
 from delver.handlers import (
     ListHandler, DictHandler, GenericClassHandler, ValueHandler)
 
@@ -44,7 +44,7 @@ class Delver(object):
         self.running = True
         try:
             while self.running:
-                table = NewTablePrinter()
+                table = TablePrinter()
                 _print(DEFAULT_DIVIDER)
                 if len(self.path) > 0:
                     _print(('At path: {}'.format(''.join(self.path))))
@@ -101,30 +101,3 @@ class Delver(object):
 def _print(string):
     """Wrapper function used to enable testing of printed output strings"""
     print(string)
-
-
-if __name__ == '__main__':
-    class Bar(object):
-        pass
-
-    class Foo(object):
-        def __init__(self):
-            self.attr1 = 1
-            self.attr2 = 'b'
-            self.deep_struct = {
-                'bar': Bar(),
-                'other': [
-                    {3: 1, 4: 2},
-                    [['a', 'blah', 3.122]]
-                ],
-                'self': self
-            }
-
-        def my_method(self, a):
-            return a + 1
-
-    my_foo = Foo()
-    obj = {'foo': my_foo, 'a': True, 100: 1000,
-           ('my', 'tuple'): None, 'empty': []}
-    delver = Delver(obj)
-    delver.run()

@@ -42,16 +42,22 @@ class ListHandler(BaseObjectHandler):
     path_modifier = '[{}]'
 
     def build_table_info(self, obj):
-        column_names = ['Idx', 'Data']
         rows = []
-        for i, value in enumerate(obj):
-            description = get_object_description(value)
-            rows.append([six.text_type(i), six.text_type(description)])
+        if len(obj) == 0:
+            column_names = ['Data']
+            index_descriptor = None
+            rows.append([six.text_type('')])
+        else:
+            column_names = ['Idx', 'Data']
+            index_descriptor = self.index_descriptor
+            for i, value in enumerate(obj):
+                description = get_object_description(value)
+                rows.append([six.text_type(i), six.text_type(description)])
         table_info = {
             'columns': column_names,
             'rows': rows,
             'description': 'List (length {})'.format(len(obj)),
-            'index_descriptor': self.index_descriptor
+            'index_descriptor': index_descriptor
         }
         return table_info
 
@@ -69,7 +75,7 @@ class ListHandler(BaseObjectHandler):
 class DictHandler(BaseObjectHandler):
     handle_type = dict
     index_descriptor = 'key index'
-    path_modifier = '["{}"]'
+    path_modifier = '[{}]'
 
     def build_table_info(self, obj):
         keys = sorted([(str(k), k) for k in obj.keys()], key=lambda x: x[0])
@@ -92,8 +98,12 @@ class DictHandler(BaseObjectHandler):
 
     def object_accessor(self, obj, inp):
         accessor_pair = self.encountered_pointer_map[id(obj)][inp]
+        if isinstance(accessor_pair[1], str):
+            path_addition = '"{}"'.format(accessor_pair[1])
+        else:
+            path_addition = '{}'.format(accessor_pair[1])
         return (
-            obj[accessor_pair[1]], self.path_modifier.format(accessor_pair[0]))
+            obj[accessor_pair[1]], self.path_modifier.format(path_addition))
 
 
 class GenericClassHandler(BaseObjectHandler):
