@@ -3,7 +3,7 @@ import unittest
 
 import mock
 
-from .context import delve as mod_ut
+from context import core as mod_ut
 
 
 class TestDelveFunctional(unittest.TestCase):
@@ -11,8 +11,8 @@ class TestDelveFunctional(unittest.TestCase):
     def setUp(self):
         """Initialize frequently used test objects"""
         self.test_obj = {'foo': ['bar', {'baz': 3}]}
-        print_patch = mock.patch('src.delver.delve._print')
-        input_patch = mock.patch('src.delver.delve.six_input')
+        print_patch = mock.patch('delver.core._print')
+        input_patch = mock.patch('delver.core.six_input')
         self.fake_print = print_patch.start()
         self.fake_input = input_patch.start()
         self.addCleanup(print_patch.stop)
@@ -39,24 +39,25 @@ class TestDelveFunctional(unittest.TestCase):
         ]
         target_print_args = [
             mod_ut.DEFAULT_DIVIDER,
+            'At path: root',
             'Dict (length 1)',
-            ('+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
+            '+-----+-----+------------------+\n'
+            '| Idx | Key | Data             |\n'
+            '+-----+-----+------------------+\n'
+            '| 0   | foo | <list, length 2> |\n'
+            '+-----+-----+------------------+',
             mod_ut.DEFAULT_DIVIDER,
-            'At path foo',
+            'At path: root["foo"]',
             'List (length 2)',
-            ('+-----+------------------+\n'
-             '| Idx | Data             |\n'
-             '+-----+------------------+\n'
-             '| 0   | bar              |\n'
-             '| 1   | <dict, length 1> |\n'
-             '+-----+------------------+'),
+            '+-----+------------------+\n'
+            '| Idx | Data             |\n'
+            '+-----+------------------+\n'
+            '| 0   | bar              |\n'
+            '| 1   | <dict, length 1> |\n'
+            '+-----+------------------+',
             'Bye.'
         ]
-        mod_ut.delve(self.test_obj)
+        mod_ut.Delver(self.test_obj).run()
         result_print_args = self._extract_print_strings(
             self.fake_print.call_args_list)
         self.assertListEqual(result_print_args, target_print_args)
@@ -69,24 +70,26 @@ class TestDelveFunctional(unittest.TestCase):
         ]
         target_print_args = [
             mod_ut.DEFAULT_DIVIDER,
+            'At path: root',
             'Dict (length 1)',
-            ('+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
-            'Invalid index',
+            '+-----+-----+------------------+\n'
+            '| Idx | Key | Data             |\n'
+            '+-----+-----+------------------+\n'
+            '| 0   | foo | <list, length 2> |\n'
+            '+-----+-----+------------------+',
+            'Invalid Index',
             mod_ut.DEFAULT_DIVIDER,
+            'At path: root',
             'Dict (length 1)',
-            ('+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
+            '+-----+-----+------------------+\n'
+            '| Idx | Key | Data             |\n'
+            '+-----+-----+------------------+\n'
+            '| 0   | foo | <list, length 2> |\n'
+            '+-----+-----+------------------+',
             'Bye.'
         ]
 
-        mod_ut.delve(self.test_obj)
+        mod_ut.Delver(self.test_obj).run()
         result_print_args = self._extract_print_strings(
             self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
@@ -97,25 +100,28 @@ class TestDelveFunctional(unittest.TestCase):
             'blah',
             'q'
         ]
-        mod_ut.delve(self.test_obj)
+        mod_ut.Delver(self.test_obj).run()
         target_print_args = [
             mod_ut.DEFAULT_DIVIDER,
+            'At path: root',
             'Dict (length 1)',
-            ('+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
-            "Invalid command; please specify one of '<key index>', 'u', 'q'",
+            '+-----+-----+------------------+\n'
+            '| Idx | Key | Data             |\n'
+            '+-----+-----+------------------+\n'
+            '| 0   | foo | <list, length 2> |\n'
+            '+-----+-----+------------------+',
+            "Invalid command; please specify one of ['<key index>', u, q]",
             mod_ut.DEFAULT_DIVIDER,
+            'At path: root',
             'Dict (length 1)',
-            ('+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
+            '+-----+-----+------------------+\n'
+            '| Idx | Key | Data             |\n'
+            '+-----+-----+------------------+\n'
+            '| 0   | foo | <list, length 2> |\n'
+            '+-----+-----+------------------+',
             'Bye.'
         ]
+
         result_print_args = self._extract_print_strings(
             self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
@@ -130,54 +136,47 @@ class TestDelveFunctional(unittest.TestCase):
             '0',
             'q'
         ]
-        mod_ut.delve(self.test_obj)
+        mod_ut.Delver(self.test_obj).run()
         target_print_args = [
             mod_ut.DEFAULT_DIVIDER,
+            'At path: root',
             'Dict (length 1)',
-            ('+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
+            '+-----+-----+------------------+\n'
+            '| Idx | Key | Data             |\n'
+            '+-----+-----+------------------+\n'
+            '| 0   | foo | <list, length 2> |\n'
+            '+-----+-----+------------------+',
             mod_ut.DEFAULT_DIVIDER,
-            'At path foo',
+            'At path: root["foo"]',
             'List (length 2)',
-            ('+-----+------------------+\n'
-             '| Idx | Data             |\n'
-             '+-----+------------------+\n'
-             '| 0   | bar              |\n'
-             '| 1   | <dict, length 1> |\n'
-             '+-----+------------------+'),
+            '+-----+------------------+\n'
+            '| Idx | Data             |\n'
+            '+-----+------------------+\n'
+            '| 0   | bar              |\n'
+            '| 1   | <dict, length 1> |\n'
+            '+-----+------------------+',
             mod_ut.DEFAULT_DIVIDER,
-            'At path foo->1',
+            'At path: root["foo"][1]',
             'Dict (length 1)',
-            ('+-----+-----+------+\n'
-             '| Idx | Key | Data |\n'
-             '+-----+-----+------+\n'
-             '| 0   | baz | 3    |\n'
-             '+-----+-----+------+'),
+            '+-----+-----+------+\n'
+            '| Idx | Key | Data |\n'
+            '+-----+-----+------+\n'
+            '| 0   | baz | 3    |\n'
+            '+-----+-----+------+',
             mod_ut.DEFAULT_DIVIDER,
-            'At path foo->1->baz',
-            ('+-------+\n'
-             '| Value |\n'
-             '+-------+\n'
-             '| 3     |\n'
-             '+-------+'),
+            'At path: root["foo"][1]["baz"]',
+            '+-------+\n| Value |\n+-------+\n| 3     |\n+-------+',
             mod_ut.DEFAULT_DIVIDER,
-            'At path foo->1',
+            'At path: root["foo"][1]',
             'Dict (length 1)',
-            ('+-----+-----+------+\n'
-             '| Idx | Key | Data |\n'
-             '+-----+-----+------+\n'
-             '| 0   | baz | 3    |\n'
-             '+-----+-----+------+'),
+            '+-----+-----+------+\n'
+            '| Idx | Key | Data |\n'
+            '+-----+-----+------+\n'
+            '| 0   | baz | 3    |\n'
+            '+-----+-----+------+',
             mod_ut.DEFAULT_DIVIDER,
-            'At path foo->1->baz',
-            ('+-------+\n'
-             '| Value |\n'
-             '+-------+\n'
-             '| 3     |\n'
-             '+-------+'),
+            'At path: root["foo"][1]["baz"]',
+            '+-------+\n| Value |\n+-------+\n| 3     |\n+-------+',
             'Bye.'
         ]
         result_print_args = self._extract_print_strings(

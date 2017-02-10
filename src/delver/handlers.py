@@ -1,40 +1,107 @@
+"""Module containing object handler classes used by :py:class:`.Delver`"""
+
 import hashlib
 
 import six
 
-BUILTIN_TYPES = (int, float, bool, str, type(None))
+from delver.exceptions import ObjectHandlerInputValidationError
 
 
 class BaseObjectHandler(object):
+    """Base Object Handler class from which other handlers should inherit"""
+    #: The object type associated with this handler
     handle_type = None
+
+    #: The description of the input identifier integer, e.g. 'Key Index'
     index_descriptor = None
-    has_children = True
+
+    #: The format string to wrap the object's path for display in the Delver
     path_modifier = '{}'
 
     def __init__(self, verbose=False):
-        self.encountered_pointer_map = {}
+        """Instantiate the necessary instance arguments"""
+        self._encountered_pointer_map = {}
         self.verbose = verbose
 
     def check_applies(self, obj):
-        if isinstance(obj, self.handle_type):
-            return True
-        else:
-            return False
+        """"Determine whether or not this object handler applies to this object
+        based on it's type matching :py:attr:`.handle_type`.
+
+        :returns: if the object is applicable to this handler
+        :rtype: ``bool``
+        """
+        return isinstance(obj, self.handle_type)
 
     def build_table_info(self, obj):
-        pass
+        """Create a table of information describing the contents of *obj*. Must
+        be implemented by child classes.
 
-    def object_accessor(self, obj, inp):
-        pass
+        :param obj: the object to build the table information for
 
-    def add_property_map(self, obj, index_prop_map):
-        self.encountered_pointer_map[id(obj)] = index_prop_map
+        :returns: a dictionary of information about *obj* to be printed in a
+            table
+        :rtype: ``dict`` containing keys `columns`, `rows`, and optionally
+            `description`
+        """
+        raise NotImplementedError(
+            'Child object handlers must overwrite this method')
 
-    def validate_input_for_obj(self, obj, inp):
-        if inp in self.encountered_pointer_map[id(obj)].keys():
-            return True, None
-        else:
-            return False, 'Invalid Index'
+    def handle_input(self, obj, inp):
+        """Validate the input and retrieve the relevant attribute of *obj*
+        based on the *inp*.
+
+        :param obj: the object to access
+        :param inp: the user input
+        :type inp: ``str``
+
+        :returns: the appropriate attribute of *obj*
+
+        :raises :py:class:`.ObjectHandlerInputValidationError`: if the input
+            is invalid for the given handler
+        """
+        inp = self._validate_input_for_obj(obj, inp)
+        return self._object_accessor(obj, inp)
+
+    def _object_accessor(self, obj, inp):
+        """The method called to actually perform the attribute accessing,
+        which varies based on :py:attr:`.handle_type`. Must be implemented
+        by child classes.
+
+        :returns: the relevant attribute of *obj*
+        """
+        raise NotImplementedError(
+            'Child object handlers must overwrite this method')
+
+    def _add_property_map(self, obj, index_prop_map):
+        """Add an entry to this handler's encountered property map. This
+        is used to keep track of the attributes associated with the object
+        as well as their corresponding accesor indices.
+
+        This mechanism relies on the fact that the id of the obj remains
+        the same, as do its attributes.
+
+        :param obj: the object to add the property map of
+        :param index_prop_map: a mapping of the integers associated with
+            *obj*'s attributes to the respective attribute
+        :type index_prop_map: ``dict``
+        """
+        self._encountered_pointer_map[id(obj)] = index_prop_map
+
+    def _validate_input_for_obj(self, obj, inp):
+        """Determine whether or not the given raw *inp* is valid for *obj* as
+        well as adjust *inp*'s type according to what is appropriate for this
+        handler. This method can be overridden for more granular control.
+
+        :returns: the input to be used for accessing the object's properties
+
+        :raises :py:class:`.ObjectHandlerInputValidationError`: if the input
+            is invalid for the given handler
+        """
+        inp = int(inp)
+        if inp not in self._encountered_pointer_map[id(obj)].keys():
+            raise ObjectHandlerInputValidationError('Invalid Index')
+        return inp
+
 
 class ListHandler(BaseObjectHandler):
     handle_type = list
@@ -42,6 +109,13 @@ class ListHandler(BaseObjectHandler):
     path_modifier = '[{}]'
 
     def build_table_info(self, obj):
+        """
+
+        :param obj:
+
+        :returns:
+        :rtype:
+        """
         rows = []
         if len(obj) == 0:
             column_names = ['Data']
@@ -61,15 +135,16 @@ class ListHandler(BaseObjectHandler):
         }
         return table_info
 
-    def object_accessor(self, obj, inp):
+    def _object_accessor(self, obj, inp):
         return obj[inp], self.path_modifier.format(inp)
 
-    def validate_input_for_obj(self, obj, inp):
+    def _validate_input_for_obj(self, obj, inp):
         msg = None
+        inp = int(inp)
         if inp >= len(obj):
             msg = 'Invalid index `{}`'.format(inp)
-            return False, msg
-        return True, msg
+            raise ObjectHandlerInputValidationError(msg)
+        return inp
 
 
 class DictHandler(BaseObjectHandler):
@@ -78,9 +153,16 @@ class DictHandler(BaseObjectHandler):
     path_modifier = '[{}]'
 
     def build_table_info(self, obj):
+        """
+
+        :param obj:
+
+        :returns:
+        :rtype:
+        """
         keys = sorted([(str(k), k) for k in obj.keys()], key=lambda x: x[0])
         index_prop_map = {i: k for i, k in enumerate(keys)}
-        self.add_property_map(obj, index_prop_map)
+        self._add_property_map(obj, index_prop_map)
         rows = []
         for i, key_pair in enumerate(keys):
             value = obj[key_pair[1]]
@@ -96,8 +178,8 @@ class DictHandler(BaseObjectHandler):
         }
         return table_info
 
-    def object_accessor(self, obj, inp):
-        accessor_pair = self.encountered_pointer_map[id(obj)][inp]
+    def _object_accessor(self, obj, inp):
+        accessor_pair = self._encountered_pointer_map[id(obj)][inp]
         if isinstance(accessor_pair[1], str):
             path_addition = '"{}"'.format(accessor_pair[1])
         else:
@@ -109,17 +191,25 @@ class DictHandler(BaseObjectHandler):
 class GenericClassHandler(BaseObjectHandler):
     index_descriptor = 'attr index'
     path_modifier = '.{}'
+    _builtin_types = (int, float, bool, str, type(None))
 
     def check_applies(self, obj):
-        return not isinstance(obj, BUILTIN_TYPES)
+        return not isinstance(obj, self._builtin_types)
 
     def build_table_info(self, obj):
+        """
+
+        :param obj:
+
+        :returns:
+        :rtype:
+        """
         table_info = {}
         props = [prop for prop in dir(obj)] #  if not prop.startswith('_')
         if not self.verbose:
             props = [prop for prop in props if not prop.startswith('_')]
         index_prop_map = {i: k for i, k in enumerate(props)}
-        self.add_property_map(obj, index_prop_map)
+        self._add_property_map(obj, index_prop_map)
         if len(props) == 0:
             table_info['columns'] = ['Attribute']
             rows = [[six.text_type(obj)]]
@@ -138,8 +228,8 @@ class GenericClassHandler(BaseObjectHandler):
         table_info['rows'] = rows
         return table_info
 
-    def object_accessor(self, obj, inp):
-        attr_name = self.encountered_pointer_map[id(obj)][inp]
+    def _object_accessor(self, obj, inp):
+        attr_name = self._encountered_pointer_map[id(obj)][inp]
         return getattr(obj, attr_name), self.path_modifier.format(attr_name)
 
 
@@ -150,6 +240,13 @@ class ValueHandler(BaseObjectHandler):
         return True
 
     def build_table_info(self, obj):
+        """
+
+        :param obj:
+
+        :returns:
+        :rtype:
+        """
         table_info = {}
         table_info['columns'] = ['Value']
         if obj is None:

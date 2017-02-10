@@ -73,10 +73,10 @@ def main():
 
     if my_args.transform_func is not None:
         try:
-            # We need to try and import the transform func and use that to convert
-            # the payload before exploring
-            transform_module_str, transform_func_str = my_args.transform_func.split(
-                ":")
+            # We need to try and import the transform func and use that to
+            # convert the payload before exploring
+            transform_module_str, transform_func_str = (
+                my_args.transform_func.split(":"))
             transform_module = importlib.import_module(transform_module_str)
             transform_func = getattr(transform_module, transform_func_str)
             payload = transform_func(payload)
