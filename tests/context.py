@@ -11,3 +11,4 @@ sys.path.insert(0, os.path.abspath('..'))
 import delver.delve as delve
 import delver.core as core
 import delver.handlers as handlers
+import delver.exceptions as exceptions

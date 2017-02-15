@@ -17,6 +17,9 @@ class Delver(object):
         ListHandler, DictHandler, GenericClassHandler, ValueHandler
     ]
     def __init__(self, obj, verbose=False):
+        """Initialize the relevant instance variables, including the object
+        handlers as well as those representing the runtime state.
+        """
         self.root_object = obj
         self.path = ['root']
         self.prev_obj = []
@@ -92,6 +95,13 @@ class Delver(object):
         return instantiated_object_handlers
 
     def _navigate_up(self, obj):
+        """Move to the previous parent object, making use of
+        :py:attr:`.path`.
+
+        :param obj: the object representing the current location
+
+        :returns: the parent object based on :py:attr:`.path`
+        """
         if len(self.prev_obj) == 0:
             _print("Can't go up a level; we're at the top")
         else:
@@ -100,10 +110,26 @@ class Delver(object):
         return obj
 
     def _quit(self, obj):
+        """Ends the primary program flow by setting :py:attr:`.continue_running`
+        to `False`.
+        """
         _print('Bye.')
         self.continue_running = False
 
     def _handle_input(self, inp, obj, object_handler):
+        """Coordinate performing actions based on the user input *inp*. Checks
+        the *inp* against the basic functions first, then attempts to use the
+        *object_handler*'s own input handler.
+
+        :param inp: the user-given input
+        :type inp: ``str``
+        :param obj: the current object
+        :param object_handler: the object handler which was applied to *obj*
+            for delving
+        :type object_handler: :py:class:`.BaseObjectHandler`
+
+        :returns: a (potentially) new obj based on how the input is handled
+        """
         if self._basic_input_map.get(inp) is not None:
             # Run the associated basic input handler function
             obj = self._basic_input_map[inp][0](obj)
@@ -116,10 +142,11 @@ class Delver(object):
             except ObjectHandlerInputValidationError as err:
                 _print(err.msg)
             except ValueError as err:
-                _print("Invalid command; please specify one of "
-                        "['<{}>', {}]".format(
-                            object_handler.index_descriptor,
-                            ', '.join(self.basic_inputs)))
+                msg = (
+                    "Invalid command; please specify one of ['<{}>', {}]".format(
+                        object_handler.index_descriptor,
+                        ', '.join(self.basic_inputs)))
+                _print(msg)
         return obj
 
 

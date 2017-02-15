@@ -104,17 +104,19 @@ class BaseObjectHandler(object):
 
 
 class ListHandler(BaseObjectHandler):
+    """Object handler for lists"""
     handle_type = list
     index_descriptor = 'int'
     path_modifier = '[{}]'
 
     def build_table_info(self, obj):
-        """
+        """Create the table info for the given list
 
-        :param obj:
+        :param obj: the list to build the table information for
 
-        :returns:
-        :rtype:
+        :returns: a dictionary of information detailing the elements in *obj*
+            and a high-level description
+        :rtype: ``dict``
         """
         rows = []
         if len(obj) == 0:
@@ -125,7 +127,7 @@ class ListHandler(BaseObjectHandler):
             column_names = ['Idx', 'Data']
             index_descriptor = self.index_descriptor
             for i, value in enumerate(obj):
-                description = get_object_description(value)
+                description = _get_object_description(value)
                 rows.append([six.text_type(i), six.text_type(description)])
         table_info = {
             'columns': column_names,
@@ -136,9 +138,11 @@ class ListHandler(BaseObjectHandler):
         return table_info
 
     def _object_accessor(self, obj, inp):
+        """Get the *inp*-th element of *obj* and the path accessor string"""
         return obj[inp], self.path_modifier.format(inp)
 
     def _validate_input_for_obj(self, obj, inp):
+        """Make sure the *inp* is not greater than the length of *obj*"""
         msg = None
         inp = int(inp)
         if inp >= len(obj):
@@ -148,39 +152,60 @@ class ListHandler(BaseObjectHandler):
 
 
 class DictHandler(BaseObjectHandler):
+    """Object handler for dicts"""
     handle_type = dict
     index_descriptor = 'key index'
     path_modifier = '[{}]'
 
     def build_table_info(self, obj):
-        """
+        """Create the table info for the given dict
 
-        :param obj:
+        :param obj: the dict to describe
 
-        :returns:
-        :rtype:
+        :returns: dictionary of information about the keys and values in *obj*
+        :rtype: ``dict``
         """
         keys = sorted([(str(k), k) for k in obj.keys()], key=lambda x: x[0])
         index_prop_map = {i: k for i, k in enumerate(keys)}
         self._add_property_map(obj, index_prop_map)
         rows = []
-        for i, key_pair in enumerate(keys):
-            value = obj[key_pair[1]]
-            description = get_object_description(value)
-            rows.append(
-                [six.text_type(i), six.text_type(key_pair[0]),
-                 six.text_type(description)])
+        if len(keys) == 0:
+            column_names = ['Data']
+            index_descriptor = None
+            rows.append([six.text_type('')])
+        else:
+            column_names = ['Idx', 'Key', 'Data']
+            index_descriptor = self.index_descriptor
+            for i, key_pair in enumerate(keys):
+                value = obj[key_pair[1]]
+                description = _get_object_description(value)
+                rows.append(
+                    [six.text_type(i), six.text_type(key_pair[0]),
+                     six.text_type(description)])
         table_info = {
-            'columns': ['Idx', 'Key', 'Data'],
+            'columns': column_names,
             'rows': rows,
-            'index_descriptor': self.index_descriptor,
+            'index_descriptor': index_descriptor,
             'description': 'Dict (length {})'.format(len(obj))
         }
         return table_info
 
     def _object_accessor(self, obj, inp):
+        """Access the field in *obj* associated with the key *inp* according
+        to the :py:attr:`._encountered_pointer_map`.
+
+        :param obj: the dictionary to access
+        :type obj: ``dict``
+        :param inp: the user-inputted key index associated with the desired
+            field to access
+        :type inp: ``int``
+
+        :return: a ``tuple`` containing the desired field from *obj* and the
+            string accessor to describe the key needed to access that field
+            directly
+        """
         accessor_pair = self._encountered_pointer_map[id(obj)][inp]
-        if isinstance(accessor_pair[1], str):
+        if isinstance(accessor_pair[1], six.string_types):
             path_addition = '"{}"'.format(accessor_pair[1])
         else:
             path_addition = '{}'.format(accessor_pair[1])
@@ -189,23 +214,30 @@ class DictHandler(BaseObjectHandler):
 
 
 class GenericClassHandler(BaseObjectHandler):
+    """Object handler for any generic object, with functionality for
+    optionally delving into the private methods/attributes of objects.
+    """
     index_descriptor = 'attr index'
     path_modifier = '.{}'
     _builtin_types = (int, float, bool, str, type(None))
 
     def check_applies(self, obj):
+        """Only use this handler if *obj* is not one of the basic built-ins"""
         return not isinstance(obj, self._builtin_types)
 
     def build_table_info(self, obj):
-        """
+        """Find the properties and methods of *obj* and return information that
+        will be used to build a table. Uses :py:attr:`.verbose` to determine
+        whether or not to include private attributes/methods.
 
-        :param obj:
+        :param obj: the object to build information for
 
-        :returns:
-        :rtype:
+        :returns: a dictionary of information about *obj*'s properties and
+            methods
+        :rtype: ``dict``
         """
         table_info = {}
-        props = [prop for prop in dir(obj)] #  if not prop.startswith('_')
+        props = [prop for prop in _dir(obj)]
         if not self.verbose:
             props = [prop for prop in props if not prop.startswith('_')]
         index_prop_map = {i: k for i, k in enumerate(props)}
@@ -221,7 +253,7 @@ class GenericClassHandler(BaseObjectHandler):
             rows = []
             for i, prop in enumerate(props):
                 attr = getattr(obj, prop)
-                description = get_object_description(attr)
+                description = _get_object_description(attr)
                 rows.append(
                     [six.text_type(i), six.text_type(prop),
                      six.text_type(description)])
@@ -229,6 +261,16 @@ class GenericClassHandler(BaseObjectHandler):
         return table_info
 
     def _object_accessor(self, obj, inp):
+        """Retrieve the relevant property from *obj* based on the property index
+        *inp*.
+
+        :param obj: the object to retrieve the property from
+        :param inp: the integer corresponding to the desired property from the
+            :py:attr:`._encountered_pointer_map`
+        :type inp: ``int``
+
+        :returns: the desired property
+        """
         attr_name = self._encountered_pointer_map[id(obj)][inp]
         return getattr(obj, attr_name), self.path_modifier.format(attr_name)
 
@@ -237,15 +279,16 @@ class ValueHandler(BaseObjectHandler):
     has_children = False
 
     def check_applies(self, obj):
+        """Since this handler is always valid, simply return `True`"""
         return True
 
     def build_table_info(self, obj):
-        """
+        """Build simple table info for a single value
 
-        :param obj:
+        :param obj: the value to describe
 
-        :returns:
-        :rtype:
+        :returns: a dictionary of information about the value
+        :rtype: ``dict``
         """
         table_info = {}
         table_info['columns'] = ['Value']
@@ -257,7 +300,8 @@ class ValueHandler(BaseObjectHandler):
         return table_info
 
 
-def get_object_description(obj):
+def _get_object_description(obj):
+    """Return a string describing the *obj*"""
     if isinstance(obj, list):
         data = '<list, length {}>'.format(len(obj))
     elif isinstance(obj, dict):
@@ -265,3 +309,8 @@ def get_object_description(obj):
     else:
         data = obj
     return data
+
+
+def _dir(obj):
+    """Wrapper function to enable testing of builtin functions"""
+    return dir(obj)
