@@ -1,6 +1,14 @@
 # Delver
 
-The `delve` command allows for the visual exploration of JSON data from the
+The Delver tool allows for the visual exploration of nested objects, which can
+be useful for coming to grips with unfamiliar data or learning the structure of
+a new codebase. In particular, this package exposes a command line tool `delve`
+as well as a Python library which can be used to understand JSON objects
+as well as arbitrary Python objects.
+
+## Command Line Tool
+
+The `delve` command allows for the exploration of JSON data from the
 command line, with the ability to see the types of data within as well as your
 current location:
 
@@ -64,18 +72,103 @@ Dict (length 4)
 At this point, the user can continue navigating using the indices, return to a higher
 level using *u*, or enter *q* to exit.
 
+## Python Library
+
+The `Delver` class, which powers the `delve` tool above, can be interfaced with
+directly when working in a python interpreter:
+
+```ipython
+In [1]: from delver.core import Delver
+
+In [2]: test_object = {'foo': 200, 'bar': False, 'baz': [1, 2, 3]}
+
+In [3]: Delver(test_object).run()
+-------------------------------------------------------------------------------
+At path: root
+Dict (length 3)
++-----+-----+------------------+
+| Idx | Key | Data             |
++-----+-----+------------------+
+| 0   | bar | False            |
+| 1   | baz | <list, length 3> |
+| 2   | foo | 200              |
++-----+-----+------------------+
+[<key index>, u, q] -->
+```
+
+This can be useful when debugging software (it works the same in
+[`pdb`](https://docs.python.org/2/library/pdb.html) or
+[`ipdb`](https://github.com/gotcha/ipdb)), as well as when working in a new or
+unfamiliar codebase. For example, it's very easy to see what public methods
+and classes are defined in a package:
+
+```ipython
+In [1]: from delver.core import Delver
+
+In [2]: import unittest
+
+In [3]: Delver(unittest).run()
+-------------------------------------------------------------------------------
+At path: root
++-----+-------------------+---------------------------------------------------+
+| Idx | Attribute         | Data                                              |
++-----+-------------------+---------------------------------------------------+
+| 0   | BaseTestSuite     | <class 'unittest.suite.BaseTestSuite'>            |
+| 1   | FunctionTestCase  | <class 'unittest.case.FunctionTestCase'>          |
+| 2   | SkipTest          | <class 'unittest.case.SkipTest'>                  |
+| 3   | TestCase          | <class 'unittest.case.TestCase'>                  |
+| 4   | TestLoader        | <class 'unittest.loader.TestLoader'>              |
+| 5   | TestProgram       | <class 'unittest.main.TestProgram'>               |
+| 6   | TestResult        | <class 'unittest.result.TestResult'>              |
+| 7   | TestSuite         | <class 'unittest.suite.TestSuite'>                |
+| 8   | TextTestResult    | <class 'unittest.runner.TextTestResult'>          |
+| 9   | TextTestRunner    | <class 'unittest.runner.TextTestRunner'>          |
+| 10  | case              | <module 'unittest.case' from                      |
+|     |                   | '/Users/asippel/python2.7/unittest/case.pyc'>     |
+| 11  | defaultTestLoader | <unittest.loader.TestLoader object at 0x10eeb0d10>|
+| 12  | expectedFailure   | <function expectedFailure at 0x10eeab8c0>         |
+| 13  | findTestCases     | <function findTestCases at 0x10eeb59b0>           |
+| 14  | getTestCaseNames  | <function getTestCaseNames at 0x10eeb58c0>        |
+| 15  | installHandler    | <function installHandler at 0x10eeb5f50>          |
+| 16  | loader            | <module 'unittest.loader' from                    |
+|     |                   | '/Users/asippel/python2.7/unittest/loader.pyc'>   |
+| 17  | main              | <class 'unittest.main.TestProgram'>               |
+| 18  | makeSuite         | <function makeSuite at 0x10eeb5938>               |
+| 19  | registerResult    | <function registerResult at 0x10eeb5e60>          |
+| 20  | removeHandler     | <function removeHandler at 0x10eec2050>           |
+| 21  | removeResult      | <function removeResult at 0x10eeb5ed8>            |
+| 22  | result            | <module 'unittest.result' from                    |
+|     |                   | '/Users/asippel/python2.7/unittest/result.pyc'>   |
+| 23  | runner            | <module 'unittest.runner' from                    |
+|     |                   | '/Users/asippel/python2.7/unittest/runner.pyc'>   |
+| 24  | signals           | <module 'unittest.signals' from                   |
+|     |                   | '/Users/asippel/python2.7/unittest/signals.pyc'>  |
+| 25  | skip              | <function skip at 0x10eeab758>                    |
+| 26  | skipIf            | <function skipIf at 0x10eeab7d0>                  |
+| 27  | skipUnless        | <function skipUnless at 0x10eeab848>              |
+| 28  | suite             | <module 'unittest.suite' from                     |
+|     |                   | '/Users/asippel/python2.7/unittest/suite.pyc'>    |
+| 29  | util              | <module 'unittest.util' from                      |
+|     |                   | '/Users/asippel/python2.7/unittest/util.pyc'>     |
++-----+-------------------+---------------------------------------------------+
+[<attr index>, u, q] -->
+```
+
+Moving through the hierarchy, then, enables quickly understanding all the parts
+that make up the unfamiliar library.
+
 # Advanced Features
 
-This tool is typically used to look through large json payloads where seeing
+This tool is typically used to look through large JSON payloads where seeing
 the entirety of the file in a text editor or on a web page is
 unwieldy/inconvenient. The advanced features allow for simplifying payloads or making
 them easier to navigate and explore.
 
-## Specifying a Data Transform
+## Specifying a Data Transform from the Command Line
 
 The ``delve`` script allows for the ability to specify a 'transform' step to
 be applied before the data is actually explored. This might be used in the case
-where unwanted fields in the json should be ignored. For example, consider the
+where unwanted fields in the JSON should be ignored. For example, consider the
 following dataset:
 
 ```javascript
@@ -191,7 +284,8 @@ python interpreter's site-packages or should be available in local scope.
 
 Setting up the development environment does not vary between python versions. See the
 instructions below for more details on how to get up and running. We welcome pull
-requests on new features or fixes!
+requests on new features or fixes (especially if they involve new
+[handlers](src/delver/handlers.py))!
 
 Note that these instructions assume the repo has been cloned locally and that
 the user is in the top-level directory:
@@ -216,13 +310,15 @@ $ pip install -r test_requirements.txt
 Executing the tests just involves running the `pytest` command:
 
 ```
-$ pytest
+$ pytest tests
 ============================= test session starts ==============================
-platform darwin -- Python 3.4.0, pytest-3.0.3, py-1.4.31, pluggy-0.4.0
+platform darwin -- Python 2.7.8, pytest-3.0.6, py-1.4.32, pluggy-0.4.0
 rootdir: /Users/asippel/delver, inifile:
-collected 4 items
+collected 27 items
 
-tests/test_delver.py ....
+tests/test_core.py .....
+tests/test_functional.py ....
+tests/test_handlers.py ..................
 
-=========================== 4 passed in 0.05 seconds ===========================
+=========================== 27 passed in 0.11 seconds ===========================
 ```
