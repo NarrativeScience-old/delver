@@ -3,8 +3,8 @@
 The Delver tool allows for the visual exploration of nested objects, which can
 be useful for coming to grips with unfamiliar data or learning the structure of
 a new codebase. In particular, this package exposes a command line tool `delve`
-as well as a Python library which can be used to understand JSON objects
-as well as arbitrary Python objects.
+as well as a Python library which can be used to understand JSON structures
+and arbitrary Python objects.
 
 ## Command Line Tool
 
@@ -74,7 +74,7 @@ level using *u*, or enter *q* to exit.
 
 ## Python Library
 
-The `Delver` class, which powers the `delve` tool above, can be interfaced with
+The `Delver` class, which powers the `delve` tool above, can be used
 directly when working in a python interpreter:
 
 ```ipython
