@@ -37,7 +37,7 @@ import six
 from six.moves import zip as six_zip
 from six.moves import input as six_input
 
-from delver.core import Delver
+from delver.core import run
 
 
 def _get_cli_args():
@@ -100,8 +100,7 @@ def main():
 
     del payload_str
     my_args.payload.close()
-    delver = Delver(payload)
-    delver.run()
+    run(payload)
 
 
 if __name__ == '__main__':

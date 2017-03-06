@@ -124,32 +124,32 @@ At path: root
 | 8   | TextTestResult    | <class 'unittest.runner.TextTestResult'>          |
 | 9   | TextTestRunner    | <class 'unittest.runner.TextTestRunner'>          |
 | 10  | case              | <module 'unittest.case' from                      |
-|     |                   | '/Users/asippel/python2.7/unittest/case.pyc'>     |
+|     |                   | '/Users/nscience/python2.7/unittest/case.pyc'>    |
 | 11  | defaultTestLoader | <unittest.loader.TestLoader object at 0x10eeb0d10>|
 | 12  | expectedFailure   | <function expectedFailure at 0x10eeab8c0>         |
 | 13  | findTestCases     | <function findTestCases at 0x10eeb59b0>           |
 | 14  | getTestCaseNames  | <function getTestCaseNames at 0x10eeb58c0>        |
 | 15  | installHandler    | <function installHandler at 0x10eeb5f50>          |
 | 16  | loader            | <module 'unittest.loader' from                    |
-|     |                   | '/Users/asippel/python2.7/unittest/loader.pyc'>   |
+|     |                   | '/Users/nscience/python2.7/unittest/loader.pyc'>  |
 | 17  | main              | <class 'unittest.main.TestProgram'>               |
 | 18  | makeSuite         | <function makeSuite at 0x10eeb5938>               |
 | 19  | registerResult    | <function registerResult at 0x10eeb5e60>          |
 | 20  | removeHandler     | <function removeHandler at 0x10eec2050>           |
 | 21  | removeResult      | <function removeResult at 0x10eeb5ed8>            |
 | 22  | result            | <module 'unittest.result' from                    |
-|     |                   | '/Users/asippel/python2.7/unittest/result.pyc'>   |
+|     |                   | '/Users/nscience/python2.7/unittest/result.pyc'>  |
 | 23  | runner            | <module 'unittest.runner' from                    |
-|     |                   | '/Users/asippel/python2.7/unittest/runner.pyc'>   |
+|     |                   | '/Users/nscience/python2.7/unittest/runner.pyc'>  |
 | 24  | signals           | <module 'unittest.signals' from                   |
-|     |                   | '/Users/asippel/python2.7/unittest/signals.pyc'>  |
+|     |                   | '/Users/nscience/python2.7/unittest/signals.pyc'> |
 | 25  | skip              | <function skip at 0x10eeab758>                    |
 | 26  | skipIf            | <function skipIf at 0x10eeab7d0>                  |
 | 27  | skipUnless        | <function skipUnless at 0x10eeab848>              |
 | 28  | suite             | <module 'unittest.suite' from                     |
-|     |                   | '/Users/asippel/python2.7/unittest/suite.pyc'>    |
+|     |                   | '/Users/nscience/python2.7/unittest/suite.pyc'>   |
 | 29  | util              | <module 'unittest.util' from                      |
-|     |                   | '/Users/asippel/python2.7/unittest/util.pyc'>     |
+|     |                   | '/Users/nscience/python2.7/unittest/util.pyc'>    |
 +-----+-------------------+---------------------------------------------------+
 [<attr index>, u, q] -->
 ```
@@ -313,7 +313,7 @@ Executing the tests just involves running the `pytest` command:
 $ pytest tests
 ============================= test session starts ==============================
 platform darwin -- Python 2.7.8, pytest-3.0.6, py-1.4.32, pluggy-0.4.0
-rootdir: /Users/asippel/delver, inifile:
+rootdir: /Users/nscience/delver, inifile:
 collected 27 items
 
 tests/test_core.py .....

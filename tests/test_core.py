@@ -18,24 +18,24 @@ class TestDelver(unittest.TestCase):
         """Ensure correct instance args are created"""
         obj_ut = mod_ut.Delver(self.obj)
         self.assertIsInstance(obj_ut, mod_ut.Delver)
-        self.assertFalse(obj_ut.verbose)
+        self.assertFalse(obj_ut._verbose)
 
         # Instance args correctly persisted
         obj_ut = mod_ut.Delver(self.obj, verbose=True)
-        self.assertTrue(obj_ut.verbose)
+        self.assertTrue(obj_ut._verbose)
 
         # Object handlers instantiated
-        self.assertTrue(len(obj_ut.object_handlers) > 0)
-        for handler in obj_ut.object_handlers:
+        self.assertTrue(len(obj_ut._object_handlers) > 0)
+        for handler in obj_ut._object_handlers:
             self.assertIsInstance(handler, handlers.BaseObjectHandler)
 
-    def test_build_prompt(self):
+    def test__build_prompt(self):
         """Test the prompt either appropriately contains the index descriptor"""
         obj_ut = mod_ut.Delver(self.obj)
-        prompt = obj_ut.build_prompt()
+        prompt = obj_ut._build_prompt()
         self.assertEqual(prompt, '[u, q] --> ')
 
-        with_index_prompt = obj_ut.build_prompt(index_descriptor='Key Index')
+        with_index_prompt = obj_ut._build_prompt(index_descriptor='Key Index')
         self.assertEqual(with_index_prompt, '[<Key Index>, u, q] --> ')
 
     def test__handle_input__basic_input(self):

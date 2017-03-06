@@ -25,18 +25,18 @@ class Delver(object):
         ListHandler, DictHandler, GenericClassHandler, ValueHandler
     ]
 
-    def __init__(self, obj, verbose=False):
+    def __init__(self, target, verbose=False):
         """Initialize the relevant instance variables.
 
         This includes the object handlers as well as those variables
         representing the runtime state.
 
-        :param obj: the object to delve into
+        :param target: the object to delve into
         :param verbose: whether or not to allow object handlers to be verbose
         :type verbose: ``bool``
         """
         # The initial object which is set to enable returning to original state
-        self._root_object = obj
+        self._root_object = target
 
         # The list of object accessor strings for each level in the path, e.g.
         # ['root', '[0]', "['foo']"]
@@ -99,7 +99,7 @@ class Delver(object):
         The control flow will continue until :py:attr:`._continue_running` is
         set to ``False`` or a keyboard interrupt is detected.
         """
-        obj = self._root_object
+        target = self._root_object
         self._continue_running = True
         try:
             while self._continue_running:
@@ -108,8 +108,8 @@ class Delver(object):
                 if len(self._path) > 0:
                     _print(('At path: {}'.format(''.join(self._path))))
                 for object_handler in self._object_handlers:
-                    if object_handler.check_applies(obj):
-                        table_info = object_handler.build_table_info(obj)
+                    if object_handler.check_applies(target):
+                        table_info = object_handler.build_table_info(target)
                         if table_info.get('description') is not None:
                             _print(table_info['description'])
                         table.build_from_info(table_info)
@@ -119,7 +119,7 @@ class Delver(object):
 
                 _print((six.text_type(table)))
                 inp = six_input(str(prompt))
-                obj = self._handle_input(inp, obj, object_handler)
+                target = self._handle_input(inp, target, object_handler)
         except (KeyboardInterrupt, EOFError):
             _print('\nBye.')
 
@@ -135,26 +135,26 @@ class Delver(object):
                 handler_class(verbose=self._verbose))
         return instantiated_object_handlers
 
-    def _navigate_up(self, obj):
+    def _navigate_up(self, target):
         """Move to the previous parent object, making use of :py:attr:`._path`.
 
-        :param obj: the object representing the current location
+        :param target: the object representing the current location
 
         :returns: the parent object based on :py:attr:`._path`
         """
         if len(self._prev_obj) == 0:
             _print("Can't go up a level; we're at the top")
         else:
-            obj = self._prev_obj.pop()
+            target = self._prev_obj.pop()
             self._path = self._path[:-1]
-        return obj
+        return target
 
-    def _quit(self, obj):
+    def _quit(self, target):
         """End the primary program flow."""
         _print('Bye.')
         self._continue_running = False
 
-    def _handle_input(self, inp, obj, object_handler):
+    def _handle_input(self, inp, target, object_handler):
         """Coordinate performing actions based on the user input.
 
         Checks the *inp* against the basic functions first, then attempts to use
@@ -162,21 +162,21 @@ class Delver(object):
 
         :param inp: the user-given input
         :type inp: ``str``
-        :param obj: the current object
-        :param object_handler: the object handler which was applied to *obj*
+        :param target: the current object
+        :param object_handler: the object handler which was applied to *target*
             for delving
         :type object_handler: :py:class:`.BaseObjectHandler`
 
-        :returns: a (potentially) new obj based on how the input is handled
+        :returns: a (potentially) new object based on how the input is handled
         """
         if self._basic_input_map.get(inp) is not None:
             # Run the associated basic input handler function
-            obj = self._basic_input_map[inp][0](obj)
+            target = self._basic_input_map[inp][0](target)
         else:
             new_path = None
             try:
-                old_obj = obj
-                obj, new_path = object_handler.handle_input(obj, inp)
+                old_target = target
+                target, new_path = object_handler.handle_input(target, inp)
             except ObjectHandlerInputValidationError as err:
                 _print(err.msg)
             except ValueError as err:
@@ -186,11 +186,17 @@ class Delver(object):
                         ', '.join(self._basic_inputs)))
                 _print(msg)
             if new_path is not None:
-                self._prev_obj.append(old_obj)
+                self._prev_obj.append(old_target)
                 self._path.append(six.text_type(new_path))
-        return obj
+        return target
 
 
 def _print(string):
     """Wrapper function used to enable testing of printed output strings."""
     print(string)
+
+
+def run(target, **kwargs):
+    """Initialize and begin execution of a :py:class:`Delver` object"""
+    delver = Delver(target, **kwargs)
+    delver.run()
