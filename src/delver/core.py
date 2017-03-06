@@ -1,4 +1,6 @@
 """Module containing the core :py:class:`Delver` object."""
+from collections import namedtuple, OrderedDict
+
 import six
 from six.moves import input as six_input
 
@@ -38,27 +40,22 @@ class Delver(object):
         # The initial object which is set to enable returning to original state
         self._root_object = target
 
-        # The list of object accessor strings for each level in the path, e.g.
-        # ['root', '[0]', "['foo']"]
-        self._path = ['root']
-
-        # The last object, used to jump back up the hierarchy
-        self._prev_obj = []
+        # A named tuple to store information about the path, including
+        # a 'path' attribute which is a list of object accessor strings
+        # (like '["foo"]', '[0]'), and a 'previous' attribute which is just
+        # a pointer to the previous object
+        self._path = namedtuple('path', ['path', 'previous'])
+        self._path.path = ['root']
+        self._path.previous = []
 
         # The indicator for whether or not to continue program flow
         self._continue_running = False
 
-        # A mapping of possible user input commands to a tuple of
-        # the function to use if that input is selected and the
-        # index indicating that command's order in the list of possible inputs
-        self._basic_input_map = {
-            'u': (self._navigate_up, 0), 'q': (self._quit, 1)}
-
-        # The list of raw user input commands sorted according to their index
-        # in the above mapping
-        self._basic_inputs = sorted(
-            self._basic_input_map.keys(),
-            key=lambda x: self._basic_input_map[x][1])
+        # An ordered mapping of possible user input commands to the function to
+        # use if that input is selected
+        self._basic_input_map = OrderedDict()
+        self._basic_input_map['u'] = self._navigate_up
+        self._basic_input_map['q'] = self._quit
 
         # Whether or not to allow object handlers to be verbose
         self._verbose = verbose
@@ -70,7 +67,7 @@ class Delver(object):
     def _build_prompt(self, index_descriptor=None):
         """Create the user input prompt based on the possible commands.
 
-        Builds the prompt from the :py:attr:`._basic_inputs`, taking into
+        Builds the prompt from the :py:attr:`._basic_input_map`, taking into
         account the need for an index, as given by *index_descriptor*. An
         example would be '[<Key Index>, u, q] --> ' if *index_descriptor* was
         'Key Index'. If *index_descriptor is `None`, then the prompt would
@@ -83,7 +80,7 @@ class Delver(object):
         :returns: the prompt to be given to the user for input
         :rtype: ``str``
         """
-        basic_inputs = ', '.join(self._basic_inputs)
+        basic_inputs = ', '.join(self._basic_input_map.keys())
         if index_descriptor is not None:
             prompt = '[<{}>, {}] --> '.format(index_descriptor, basic_inputs)
         else:
@@ -105,16 +102,16 @@ class Delver(object):
             while self._continue_running:
                 table = TablePrinter()
                 _print(DEFAULT_DIVIDER)
-                if len(self._path) > 0:
-                    _print(('At path: {}'.format(''.join(self._path))))
+                if len(self._path.path) > 0:
+                    _print(('At path: {}'.format(''.join(self._path.path))))
                 for object_handler in self._object_handlers:
                     if object_handler.check_applies(target):
-                        table_info = object_handler.build_table_info(target)
-                        if table_info.get('description') is not None:
-                            _print(table_info['description'])
-                        table.build_from_info(table_info)
+                        object_info = object_handler.describe(target)
+                        if object_info.get('description') is not None:
+                            _print(object_info['description'])
+                        table.build_from_info(object_info)
                         prompt = self._build_prompt(
-                            index_descriptor=table_info.get('index_descriptor'))
+                            index_descriptor=object_info.get('index_descriptor'))
                         break
 
                 _print((six.text_type(table)))
@@ -142,11 +139,11 @@ class Delver(object):
 
         :returns: the parent object based on :py:attr:`._path`
         """
-        if len(self._prev_obj) == 0:
+        if len(self._path.previous) == 0:
             _print("Can't go up a level; we're at the top")
         else:
-            target = self._prev_obj.pop()
-            self._path = self._path[:-1]
+            target = self._path.previous.pop()
+            self._path.path = self._path.path[:-1]
         return target
 
     def _quit(self, target):
@@ -171,7 +168,7 @@ class Delver(object):
         """
         if self._basic_input_map.get(inp) is not None:
             # Run the associated basic input handler function
-            target = self._basic_input_map[inp][0](target)
+            target = self._basic_input_map[inp](target)
         else:
             new_path = None
             try:
@@ -183,11 +180,11 @@ class Delver(object):
                 msg = (
                     "Invalid command; please specify one of ['<{}>', {}]".format(
                         object_handler.index_descriptor,
-                        ', '.join(self._basic_inputs)))
+                        ', '.join(self._basic_input_map.keys())))
                 _print(msg)
             if new_path is not None:
-                self._prev_obj.append(old_target)
-                self._path.append(six.text_type(new_path))
+                self._path.previous.append(old_target)
+                self._path.path.append(six.text_type(new_path))
         return target
 
 

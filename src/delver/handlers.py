@@ -32,7 +32,7 @@ class BaseObjectHandler(object):
         """
         return isinstance(target, self.handle_type)
 
-    def build_table_info(self, target):
+    def describe(self, target):
         """Create a table of information describing the contents of *target*.
         Must be implemented by child classes.
 
@@ -109,7 +109,7 @@ class ListHandler(BaseObjectHandler):
     index_descriptor = 'int'
     path_modifier = '[{}]'
 
-    def build_table_info(self, target):
+    def describe(self, target):
         """Create the table info for the given list
 
         :param target: the list to build the table information for
@@ -129,13 +129,13 @@ class ListHandler(BaseObjectHandler):
             for i, value in enumerate(target):
                 description = _get_object_description(value)
                 rows.append([six.text_type(i), six.text_type(description)])
-        table_info = {
+        object_info = {
             'columns': column_names,
             'rows': rows,
             'description': 'List (length {})'.format(len(target)),
             'index_descriptor': index_descriptor
         }
-        return table_info
+        return object_info
 
     def _object_accessor(self, target, inp):
         """Get the *inp*-th element of *target* and the path accessor string"""
@@ -157,7 +157,7 @@ class DictHandler(BaseObjectHandler):
     index_descriptor = 'key index'
     path_modifier = '[{}]'
 
-    def build_table_info(self, target):
+    def describe(self, target):
         """Create the table info for the given dict
 
         :param target: the dict to describe
@@ -183,13 +183,13 @@ class DictHandler(BaseObjectHandler):
                 rows.append(
                     [six.text_type(i), six.text_type(key_pair[0]),
                      six.text_type(description)])
-        table_info = {
+        object_info = {
             'columns': column_names,
             'rows': rows,
             'index_descriptor': index_descriptor,
             'description': 'Dict (length {})'.format(len(target))
         }
-        return table_info
+        return object_info
 
     def _object_accessor(self, target, inp):
         """Access the field in *target* associated with the key *inp* according
@@ -226,7 +226,7 @@ class GenericClassHandler(BaseObjectHandler):
         """Use this handler if *target* is not one of the basic built-ins"""
         return not isinstance(target, self._builtin_types)
 
-    def build_table_info(self, target):
+    def describe(self, target):
         """Find the properties and methods of *target* and return information
         that will be used to build a table. Uses :py:attr:`.verbose` to
         determine whether or not to include private attributes/methods.
@@ -237,20 +237,20 @@ class GenericClassHandler(BaseObjectHandler):
             methods
         :rtype: ``dict``
         """
-        table_info = {}
+        object_info = {}
         props = [prop for prop in _dir(target)]
         if not self.verbose:
             props = [prop for prop in props if not prop.startswith('_')]
         index_prop_map = {i: k for i, k in enumerate(props)}
         self._add_property_map(target, index_prop_map)
         if len(props) == 0:
-            table_info['columns'] = ['Attribute']
+            object_info['columns'] = ['Attribute']
             rows = [[six.text_type(target)]]
-            table_info['has_children'] = False
-            table_info['index_descriptor'] = None
+            object_info['has_children'] = False
+            object_info['index_descriptor'] = None
         else:
-            table_info['columns'] = ['Idx', 'Attribute', 'Data']
-            table_info['index_descriptor'] = self.index_descriptor
+            object_info['columns'] = ['Idx', 'Attribute', 'Data']
+            object_info['index_descriptor'] = self.index_descriptor
             rows = []
             for i, prop in enumerate(props):
                 attr = getattr(target, prop)
@@ -258,8 +258,8 @@ class GenericClassHandler(BaseObjectHandler):
                 rows.append(
                     [six.text_type(i), six.text_type(prop),
                      six.text_type(description)])
-        table_info['rows'] = rows
-        return table_info
+        object_info['rows'] = rows
+        return object_info
 
     def _object_accessor(self, target, inp):
         """Retrieve the relevant property from *target* based on the property
@@ -283,7 +283,7 @@ class ValueHandler(BaseObjectHandler):
         """Since this handler is always valid, simply return `True`"""
         return True
 
-    def build_table_info(self, target):
+    def describe(self, target):
         """Build simple table info for a single value
 
         :param target: the value to describe
@@ -291,14 +291,14 @@ class ValueHandler(BaseObjectHandler):
         :returns: a dictionary of information about the value
         :rtype: ``dict``
         """
-        table_info = {}
-        table_info['columns'] = ['Value']
+        object_info = {}
+        object_info['columns'] = ['Value']
         if target is None:
             description = six.text_type('None')
         else:
             description = six.text_type(target)
-        table_info['rows'] = [[description]]
-        return table_info
+        object_info['rows'] = [[description]]
+        return object_info
 
 
 def _get_object_description(target):

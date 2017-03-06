@@ -1,5 +1,5 @@
 """Module containing TablePrinter class for creating and formatting tables"""
-from textwrap import wrap
+from textwrap import fill
 
 from terminaltables import AsciiTable
 
@@ -29,9 +29,6 @@ class TablePrinter(object):
         for row in table_info['rows']:
             new_row = []
             for cell in row:
-                new_cell = cell
-                if len(cell) > MAX_COLUMN_WIDTH:
-                    new_cell = '\n'.join(wrap(new_cell, MAX_COLUMN_WIDTH))
-                new_row.append(new_cell)
+                new_row.append(fill(cell, MAX_COLUMN_WIDTH))
             final_rows.append(new_row)
         self.table = AsciiTable([table_info['columns']] + final_rows)

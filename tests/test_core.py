@@ -46,7 +46,7 @@ class TestDelver(unittest.TestCase):
 
         fake_do_thing = mock.Mock()
         new_basic_input_map = {
-            'do-the-thing': (fake_do_thing, 0)
+            'do-the-thing': fake_do_thing
         }
         obj_ut = mod_ut.Delver(self.obj)
         obj_ut._basic_input_map = new_basic_input_map

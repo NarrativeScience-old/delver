@@ -23,7 +23,7 @@ class TestBaseObjectHandlerr(unittest.TestCase):
         """Test the required methods raise not implemented errors"""
         obj_ut = mod_ut.BaseObjectHandler()
         with self.assertRaises(NotImplementedError):
-            obj_ut.build_table_info('')
+            obj_ut.describe('')
         with self.assertRaises(NotImplementedError):
             obj_ut._object_accessor('', '')
 
@@ -33,11 +33,11 @@ class TestBaseObjectHandlerr(unittest.TestCase):
         obj_ut.handle_type = str
         self.assertTrue(obj_ut.check_applies('hello'))
 
-    def test_build_table_info(self):
+    def test_describe(self):
         """Ensure a not implemented error is raised"""
         obj_ut = mod_ut.BaseObjectHandler()
         with self.assertRaises(NotImplementedError):
-            obj_ut.build_table_info({'foo': 'bar'})
+            obj_ut.describe({'foo': 'bar'})
 
     def test__object_accessor(self):
         """Ensure a not implemented error is raised"""
@@ -48,7 +48,7 @@ class TestBaseObjectHandlerr(unittest.TestCase):
 
 class TestListHandler(unittest.TestCase):
     """Tests for the ListHandler class"""
-    def test_build_table_info(self):
+    def test_describe(self):
         """Test we return accurate information for a list"""
         obj_ut = mod_ut.ListHandler()
         input_list = [{'foo': 'bar'}, True, (0.3, 100)]
@@ -61,7 +61,7 @@ class TestListHandler(unittest.TestCase):
                 ['0', '<dict, length 1>'],
                 ['1', 'True'],
                 ['2', '(0.3, 100)']]}
-        result = obj_ut.build_table_info(input_list)
+        result = obj_ut.describe(input_list)
         self.assertDictEqual(result, target)
 
         # Empty list
@@ -71,7 +71,7 @@ class TestListHandler(unittest.TestCase):
             'description': 'List (length 0)',
             'rows': [['']]
         }
-        result = obj_ut.build_table_info([])
+        result = obj_ut.describe([])
         self.assertDictEqual(result, target)
 
     def test__object_accessor(self):
@@ -92,7 +92,7 @@ class TestListHandler(unittest.TestCase):
 
 class TestDictHandler(unittest.TestCase):
     """Tests for the DictHandler class"""
-    def test_build_table_info(self):
+    def test_describe(self):
         """Test we return accurate information for a dict"""
         obj_ut = mod_ut.DictHandler()
         input_dict = {'foo': 'bar', (1, 3): False, 100: 20.01}
@@ -104,7 +104,7 @@ class TestDictHandler(unittest.TestCase):
             'rows': [['0', '(1, 3)', 'False'],
                      ['1', '100', '20.01'],
                      ['2', 'foo', 'bar']]}
-        result = obj_ut.build_table_info(input_dict)
+        result = obj_ut.describe(input_dict)
         self.assertDictEqual(result, target)
 
         # Empty dict
@@ -114,7 +114,7 @@ class TestDictHandler(unittest.TestCase):
             'description': 'Dict (length 0)',
             'rows': [['']]
         }
-        result = obj_ut.build_table_info({})
+        result = obj_ut.describe({})
         self.assertDictEqual(result, target)
 
     def test__object_accessor(self):
@@ -123,7 +123,7 @@ class TestDictHandler(unittest.TestCase):
         obj_ut = mod_ut.DictHandler()
 
         # Make sure this would have been an object already encountered
-        obj_ut.build_table_info(target_obj)
+        obj_ut.describe(target_obj)
 
         result_obj, result_accessor = obj_ut._object_accessor(target_obj, 0)
         self.assertEqual(result_obj, 'hello there')
@@ -131,7 +131,7 @@ class TestDictHandler(unittest.TestCase):
 
         # Handle non-string keys
         non_string_dict = {(0, True, None): 'foo'}
-        obj_ut.build_table_info(non_string_dict)
+        obj_ut.describe(non_string_dict)
 
         result_obj, result_accessor = obj_ut._object_accessor(
             non_string_dict, 0)
@@ -170,7 +170,7 @@ class TestGenericClassHandler(unittest.TestCase):
         for generic_object in objects:
             self.assertTrue(obj_ut.check_applies(generic_object))
 
-    def test_build_table_info__normal(self):
+    def test_describe__normal(self):
         """Test we correctly describe the public attributes of classes"""
         class TestObject(object):
             """A test object for testing"""
@@ -192,13 +192,13 @@ class TestGenericClassHandler(unittest.TestCase):
             ['2', 'inst_attr_2', '<dict, length 1>'],
             ['3', 'test_method', '<bound method TestObject.test_method of ']
         ]
-        result = obj_ut.build_table_info(TestObject('woohoo'))
+        result = obj_ut.describe(TestObject('woohoo'))
         self.assertListEqual(result['columns'], target_columns)
         self.assertEqual(result['index_descriptor'], 'attr index')
 
         self.row_descriptions_almost_equal(result['rows'], target_rows)
 
-    def test_build_table_info__empty(self):
+    def test_describe__empty(self):
         """Test we correctly describe an empty object"""
         test_obj_description = 'test object description!'
         class TestObject(object):
@@ -213,11 +213,11 @@ class TestGenericClassHandler(unittest.TestCase):
             'rows': [[test_obj_description]]
         }
 
-        result = obj_ut.build_table_info(TestObject())
+        result = obj_ut.describe(TestObject())
         self.assertDictEqual(result, target)
 
     @mock.patch('delver.handlers._dir')
-    def test_build_table_info__verbose(self, fake_dir):
+    def test_describe__verbose(self, fake_dir):
         """Test we correctly describe an generic object verbosely"""
         private_attr = 'private attr!'
         class Foo(object):
@@ -234,7 +234,7 @@ class TestGenericClassHandler(unittest.TestCase):
                   'rows': [
                       ['0', '_private_attr', private_attr]]
         }
-        result = obj_ut.build_table_info(Foo())
+        result = obj_ut.describe(Foo())
         self.assertDictEqual(result, target)
 
     def test__object_accessor(self):
@@ -247,7 +247,7 @@ class TestGenericClassHandler(unittest.TestCase):
 
         # Make sure it's already been encountered
         test = Foo()
-        obj_ut.build_table_info(test)
+        obj_ut.describe(test)
 
         result_obj, result_accessor = obj_ut._object_accessor(test, 0)
         self.assertEqual(result_obj, 'foo attr')
@@ -256,12 +256,12 @@ class TestGenericClassHandler(unittest.TestCase):
 
 class TestValueHandler(unittest.TestCase):
     """Tests for the ValueHandler class"""
-    def test_build_table_info(self):
+    def test_describe(self):
         """Test we correctly describe a single value"""
         obj_ut = mod_ut.ValueHandler()
 
         target = {'columns': ['Value'], 'rows': [['9001']]}
-        result = obj_ut.build_table_info(9001)
+        result = obj_ut.describe(9001)
         self.assertDictEqual(result, target)
 
 

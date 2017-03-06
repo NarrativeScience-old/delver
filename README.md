@@ -78,11 +78,11 @@ The `Delver` class, which powers the `delve` tool above, can be used
 directly when working in a python interpreter:
 
 ```ipython
-In [1]: from delver.core import Delver
+In [1]: import delver
 
 In [2]: test_object = {'foo': 200, 'bar': False, 'baz': [1, 2, 3]}
 
-In [3]: Delver(test_object).run()
+In [3]: delver.run(test_object)
 -------------------------------------------------------------------------------
 At path: root
 Dict (length 3)
@@ -103,11 +103,11 @@ unfamiliar codebase. For example, it's very easy to see what public methods
 and classes are defined in a package:
 
 ```ipython
-In [1]: from delver.core import Delver
+In [1]: import delver
 
 In [2]: import unittest
 
-In [3]: Delver(unittest).run()
+In [3]: delver.run(unittest)
 -------------------------------------------------------------------------------
 At path: root
 +-----+-------------------+---------------------------------------------------+
