@@ -4,7 +4,8 @@ import hashlib
 
 import six
 
-from delver.exceptions import ObjectHandlerInputValidationError
+from delver.exceptions import (
+    ObjectHandlerInputValidationError, DelverInputError)
 
 
 class BaseObjectHandler(object):
@@ -97,7 +98,10 @@ class BaseObjectHandler(object):
         :raises :py:class:`.ObjectHandlerInputValidationError`: if the input
             is invalid for the given handler
         """
-        inp = int(inp)
+        try:
+            inp = int(inp)
+        except ValueError:
+            raise DelverInputError('Invalid command')
         if inp not in self._encountered_pointer_map[id(target)].keys():
             raise ObjectHandlerInputValidationError('Invalid Index')
         return inp

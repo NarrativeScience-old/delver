@@ -96,7 +96,7 @@ class TestDelver(unittest.TestCase):
 
         # Check value error handling
         def raise_value_error(obj, inp):
-            raise ValueError('no can do')
+            raise exceptions.DelverInputError('no can do')
         fake_handle_input.side_effect = raise_value_error
         fake_obj_handler.index_descriptor = 'Mock Index'
         result = obj_ut._handle_input(

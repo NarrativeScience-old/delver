@@ -176,7 +176,7 @@ class Delver(object):
                 target, new_path = object_handler.handle_input(target, inp)
             except ObjectHandlerInputValidationError as err:
                 _print(err.msg)
-            except ValueError as err:
+            except DelverInputError as err:
                 msg = (
                     "Invalid command; please specify one of ['<{}>', {}]".format(
                         object_handler.index_descriptor,
