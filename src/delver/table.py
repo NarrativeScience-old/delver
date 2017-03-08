@@ -19,7 +19,18 @@ class TablePrinter(object):
 
     def build_from_info(self, table_info):
         """Given a dictionary of information about a table describing an object,
-        overwrite :py:attr:`.table` with the new content.
+        overwrite :py:attr:`.table` with the new content. An example
+        `table_info` would look like this:
+
+        .. code-block:: json
+
+            {
+                "rows": [
+                    ["0", "foo"],
+                    ["1", "bar"]
+                ],
+                "columns": ["Index", "Data"]
+            }
 
         :param table_info: a dictionary of information including the column
             names and rows

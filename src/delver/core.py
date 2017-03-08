@@ -101,24 +101,46 @@ class Delver(object):
         try:
             while self._continue_running:
                 table = TablePrinter()
-                _print(DEFAULT_DIVIDER)
-                if len(self._path.path) > 0:
-                    _print(('At path: {}'.format(''.join(self._path.path))))
                 for object_handler in self._object_handlers:
                     if object_handler.check_applies(target):
                         object_info = object_handler.describe(target)
-                        if object_info.get('description') is not None:
-                            _print(object_info['description'])
                         table.build_from_info(object_info)
                         prompt = self._build_prompt(
                             index_descriptor=object_info.get('index_descriptor'))
                         break
 
-                _print((six.text_type(table)))
+                self.print_table(
+                    table, description=object_info.get('description'))
                 inp = six_input(str(prompt))
                 target = self._handle_input(inp, target, object_handler)
         except (KeyboardInterrupt, EOFError):
-            _print('\nBye.')
+            self.print_message('\nBye.')
+
+    def print_table(self, table, description=None):
+        """Prints the table and other supporting information for the view.
+
+        This includes the divider to separate the view from other the previous
+        one, the current path in the object, and a description of the current
+        object.
+
+        :param table: the table instance which contains the ascii table and
+            cells
+        :type table: :py:class:`.TablePrinter`
+        :param description: an optional object description
+        :type description: ``str``
+        """
+        view = []
+        view.append(DEFAULT_DIVIDER)
+        if len(self._path.path) > 0:
+            view.append('At path: {}'.format(''.join(self._path.path)))
+        if description is not None:
+            view.append(description)
+        view.append(str(table))
+        six.print_('\n'.join(view))
+
+    def print_message(self, message):
+        """Prints a generic message, generally either a warning or error"""
+        six.print_(message)
 
     def _initialize_handlers(self):
         """Initialize handlers based on :py:attr:`._object_handler_classes`.
@@ -140,7 +162,7 @@ class Delver(object):
         :returns: the parent object based on :py:attr:`._path`
         """
         if len(self._path.previous) == 0:
-            _print("Can't go up a level; we're at the top")
+            self.print_message("Can't go up a level; we're at the top")
         else:
             target = self._path.previous.pop()
             self._path.path = self._path.path[:-1]
@@ -148,7 +170,7 @@ class Delver(object):
 
     def _quit(self, target):
         """End the primary program flow."""
-        _print('Bye.')
+        self.print_message('Bye.')
         self._continue_running = False
 
     def _handle_input(self, inp, target, object_handler):
@@ -175,22 +197,17 @@ class Delver(object):
                 old_target = target
                 target, new_path = object_handler.handle_input(target, inp)
             except ObjectHandlerInputValidationError as err:
-                _print(err.msg)
+                self.print_message(err.msg)
             except DelverInputError as err:
                 msg = (
                     "Invalid command; please specify one of ['<{}>', {}]".format(
                         object_handler.index_descriptor,
                         ', '.join(self._basic_input_map.keys())))
-                _print(msg)
+                self.print_message(msg)
             if new_path is not None:
                 self._path.previous.append(old_target)
                 self._path.path.append(six.text_type(new_path))
         return target
-
-
-def _print(string):
-    """Wrapper function used to enable testing of printed output strings."""
-    print(string)
 
 
 def run(target, **kwargs):

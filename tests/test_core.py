@@ -75,8 +75,8 @@ class TestDelver(unittest.TestCase):
         fake_handle_input.assert_called()
         self.assertEqual(result, 'bar')
 
-    @mock.patch('delver.core._print')
-    def test__handle_input__obj_handler_catch_exceptiosn(self, fake_print):
+    @mock.patch('delver.core.Delver.print_message')
+    def test__handle_input__obj_handler_catch_exceptions(self, fake_print):
         """Make sure we catch errors from object handler"""
         obj_ut = mod_ut.Delver(self.obj)
 
