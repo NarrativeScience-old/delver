@@ -8,4 +8,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-import src.delver.delve as delve
+import delver.delve as delve
+import delver.core as core
+import delver.handlers as handlers
+import delver.exceptions as exceptions
