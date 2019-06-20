@@ -307,7 +307,13 @@ $ pip install -r requirements.txt
 $ pip install -r test_requirements.txt
 ```
 
-Executing the tests just involves running the `pytest` command:
+Next you need to make sure your `PYTHONPATH` includes the source code:
+
+```
+$ export PYTHONPATH=`pwd`/src
+```
+
+Then executing the tests just involves running the `pytest` command:
 
 ```
 $ pytest tests
