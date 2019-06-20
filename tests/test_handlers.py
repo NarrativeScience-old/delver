@@ -145,7 +145,7 @@ class TestGenericClassHandler(unittest.TestCase):
         """Convenience function for testing attribute description equality"""
         for row_index, row in enumerate(result_rows):
             self.assertEqual(row[:1], target_rows[row_index][:1])
-            # For the description cell  we check that the result contains the
+            # For the description cell we check that the result contains the
             # target because by default the memory address is shown in the
             # description, which changes for each run
             self.assertTrue(target_rows[row_index][2] in row[2])
@@ -190,12 +190,12 @@ class TestGenericClassHandler(unittest.TestCase):
             ['0', 'class_attr', 'FOO!'],
             ['1', 'inst_attr_1', 'woohoo'],
             ['2', 'inst_attr_2', '<dict, length 1>'],
-            ['3', 'test_method', '<bound method TestObject.test_method of ']
+            ['3', 'test_method', '<bound method Test']
         ]
         result = obj_ut.describe(TestObject('woohoo'))
         self.assertListEqual(result['columns'], target_columns)
         self.assertEqual(result['index_descriptor'], 'attr index')
-
+        
         self.row_descriptions_almost_equal(result['rows'], target_rows)
 
     def test_describe__empty(self):
