@@ -57,11 +57,29 @@ class TablePrinter(object):
 
 
 def _style_headers(headers):
+    """Apply styles to the headers of a table.
+
+    :param headers: list of header strings for styling
+    :type headers: ``list`` of ``str``
+
+    :returns: list of header strings that have been styled
+    :rtype: ``list`` of ``str``
+    """
     return [colorful.bold & DEFAULT_COLUMN_COLORS[i] | header
             for i, header in enumerate(headers)]
 
 
 def _style_cell(cell, column_index):
+    """Apply styles to a cell of a table, taking care to account for newlines.
+
+    :param cell: the cell string contents to style
+    :type cell: ``str``
+    :param column_index: the index of the column the cell belongs to
+    :type column_index: ``int``
+
+    :returns: a styled cell string
+    :rtype: ``str``
+    """
     segments = cell.split('\n')
     if len(segments) == 1:
         return DEFAULT_COLUMN_COLORS[column_index] | cell

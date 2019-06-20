@@ -195,7 +195,6 @@ class TestGenericClassHandler(unittest.TestCase):
         result = obj_ut.describe(TestObject('woohoo'))
         self.assertListEqual(result['columns'], target_columns)
         self.assertEqual(result['index_descriptor'], 'attr index')
-        
         self.row_descriptions_almost_equal(result['rows'], target_rows)
 
     def test_describe__empty(self):
