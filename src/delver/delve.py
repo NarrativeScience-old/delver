@@ -100,7 +100,7 @@ def main():
 
     del payload_str
     my_args.payload.close()
-    run(payload)
+    run(payload, use_colors=True, verbose=False)
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ class Delver(object):
         ListHandler, DictHandler, GenericClassHandler, ValueHandler
     ]
 
-    def __init__(self, target, verbose=False):
+    def __init__(self, target, verbose=False, use_colors=False):
         """Initialize the relevant instance variables.
 
         This includes the object handlers as well as those variables
@@ -59,6 +59,8 @@ class Delver(object):
 
         # Whether or not to allow object handlers to be verbose
         self._verbose = verbose
+
+        self._use_colors = use_colors
 
         # The instantiated object handler classes from the class attribute
         # :py:attr:`.object_handler_classes`
@@ -100,7 +102,7 @@ class Delver(object):
         self._continue_running = True
         try:
             while self._continue_running:
-                table = TablePrinter()
+                table = TablePrinter(use_colors=self._use_colors)
                 for object_handler in self._object_handlers:
                     if object_handler.check_applies(target):
                         object_info = object_handler.describe(target)
