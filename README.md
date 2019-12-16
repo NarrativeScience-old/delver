@@ -263,14 +263,14 @@ The `delve` tool requires that Python is installed as well as the `six` package 
 care of via the installation method below), which allows for compatibility between Python 2
 and Python 3.
 
-Specifically, `delve` has been tested with Python versions 2.7.8 and 3.4.0.
+Specifically, `delve` has been tested with Python versions 2.7.8 and 3.6.8.
 
 ## Installation
 
 Simply install via `pip`:
 
 ```
-$  pip install delver
+$  pip install pydelver
 ```
 
 This exposes the `delve` command line script (which corresponds to the
