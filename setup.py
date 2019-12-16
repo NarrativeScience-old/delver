@@ -2,8 +2,8 @@ import setuptools
 import os
 
 setuptools.setup(
-    name='delver',
-    version='0.0.3',
+    name='pydelver',
+    version='0.0.4',
     maintainer='Alex Sippel',
     maintainer_email='asippel@narrativescience.com',
     url='https://github.com/NarrativeScience/delver',
