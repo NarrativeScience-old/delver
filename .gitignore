@@ -3,3 +3,6 @@
 test-datasets
 .python-version
 venv
+dist/
+src/delver.egg-info/
+src/pydelver.egg-info/
