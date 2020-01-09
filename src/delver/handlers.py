@@ -1,15 +1,13 @@
 """Module containing object handler classes used by :py:class:`.Delver`"""
 
-import hashlib
-
 import six
 
-from delver.exceptions import (
-    ObjectHandlerInputValidationError, DelverInputError)
+from delver.exceptions import DelverInputError, ObjectHandlerInputValidationError
 
 
 class BaseObjectHandler(object):
     """Base Object Handler class from which other handlers should inherit"""
+
     #: The object type associated with this handler
     handle_type = None
 
@@ -17,7 +15,7 @@ class BaseObjectHandler(object):
     index_descriptor = None
 
     #: The format string to wrap the object's path for display in the Delver
-    path_modifier = '{}'
+    path_modifier = "{}"
 
     def __init__(self, verbose=False):
         """Instantiate the necessary instance arguments"""
@@ -25,7 +23,7 @@ class BaseObjectHandler(object):
         self.verbose = verbose
 
     def check_applies(self, target):
-        """"Determine whether or not this object handler applies to this object
+        """Determine whether or not this object handler applies to this object
         based on it's type matching :py:attr:`.handle_type`.
 
         :returns: if the object is applicable to this handler
@@ -44,8 +42,7 @@ class BaseObjectHandler(object):
         :rtype: ``dict`` containing keys `columns`, `rows`, and optionally
             `description`
         """
-        raise NotImplementedError(
-            'Child object handlers must overwrite this method')
+        raise NotImplementedError("Child object handlers must overwrite this method")
 
     def handle_input(self, target, inp):
         """Validate the input and retrieve the relevant attribute of *target*
@@ -70,16 +67,15 @@ class BaseObjectHandler(object):
 
         :returns: the relevant attribute of *target*
         """
-        raise NotImplementedError(
-            'Child object handlers must overwrite this method')
+        raise NotImplementedError("Child object handlers must overwrite this method")
 
     def _add_property_map(self, target, index_prop_map):
         """Add an entry to this handler's encountered property map. This
         is used to keep track of the attributes associated with the object
         as well as their corresponding accesor indices.
 
-        This mechanism relies on the fact that the id of the target remains
-        the same, as do its attributes.
+        This mechanism relies on the fact that the id of the target
+        remains the same, as do its attributes.
 
         :param target: the object to add the property map of
         :param index_prop_map: a mapping of the integers associated with
@@ -89,9 +85,9 @@ class BaseObjectHandler(object):
         self._encountered_pointer_map[id(target)] = index_prop_map
 
     def _validate_input_for_obj(self, target, inp):
-        """Determine whether or not the given raw *inp* is valid for *target* as
-        well as adjust *inp*'s type according to what is appropriate for this
-        handler. This method can be overridden for more granular control.
+        """Determine whether or not the given raw *inp* is valid for *target*
+        as well as adjust *inp*'s type according to what is appropriate for
+        this handler. This method can be overridden for more granular control.
 
         :returns: the input to be used for accessing the object's properties
 
@@ -101,43 +97,44 @@ class BaseObjectHandler(object):
         try:
             inp = int(inp)
         except ValueError:
-            raise DelverInputError('Invalid command')
+            raise DelverInputError("Invalid command")
         if inp not in self._encountered_pointer_map[id(target)].keys():
-            raise ObjectHandlerInputValidationError('Invalid Index')
+            raise ObjectHandlerInputValidationError("Invalid Index")
         return inp
 
 
 class ListHandler(BaseObjectHandler):
     """Object handler for lists"""
+
     handle_type = list
-    index_descriptor = 'int'
-    path_modifier = '[{}]'
+    index_descriptor = "int"
+    path_modifier = "[{}]"
 
     def describe(self, target):
         """Create the table info for the given list
 
         :param target: the list to build the table information for
 
-        :returns: a dictionary of information detailing the elements in *target*
-            and a high-level description
+        :returns: a dictionary of information detailing the elements in
+            *target* and a high-level description
         :rtype: ``dict``
         """
         rows = []
         if len(target) == 0:
-            column_names = ['Data']
+            column_names = ["Data"]
             index_descriptor = None
-            rows.append([six.text_type('')])
+            rows.append([six.text_type("")])
         else:
-            column_names = ['Idx', 'Data']
+            column_names = ["Idx", "Data"]
             index_descriptor = self.index_descriptor
             for i, value in enumerate(target):
                 description = _get_object_description(value)
                 rows.append([six.text_type(i), six.text_type(description)])
         object_info = {
-            'columns': column_names,
-            'rows': rows,
-            'description': 'List (length {})'.format(len(target)),
-            'index_descriptor': index_descriptor
+            "columns": column_names,
+            "rows": rows,
+            "description": "List (length {})".format(len(target)),
+            "index_descriptor": index_descriptor,
         }
         return object_info
 
@@ -150,16 +147,17 @@ class ListHandler(BaseObjectHandler):
         msg = None
         inp = int(inp)
         if inp >= len(target):
-            msg = 'Invalid index `{}`'.format(inp)
+            msg = "Invalid index `{}`".format(inp)
             raise ObjectHandlerInputValidationError(msg)
         return inp
 
 
 class DictHandler(BaseObjectHandler):
     """Object handler for dicts"""
+
     handle_type = dict
-    index_descriptor = 'key index'
-    path_modifier = '[{}]'
+    index_descriptor = "key index"
+    path_modifier = "[{}]"
 
     def describe(self, target):
         """Create the table info for the given dict
@@ -175,23 +173,27 @@ class DictHandler(BaseObjectHandler):
         self._add_property_map(target, index_prop_map)
         rows = []
         if len(keys) == 0:
-            column_names = ['Data']
+            column_names = ["Data"]
             index_descriptor = None
-            rows.append([six.text_type('')])
+            rows.append([six.text_type("")])
         else:
-            column_names = ['Idx', 'Key', 'Data']
+            column_names = ["Idx", "Key", "Data"]
             index_descriptor = self.index_descriptor
             for i, key_pair in enumerate(keys):
                 value = target[key_pair[1]]
                 description = _get_object_description(value)
                 rows.append(
-                    [six.text_type(i), six.text_type(key_pair[0]),
-                     six.text_type(description)])
+                    [
+                        six.text_type(i),
+                        six.text_type(key_pair[0]),
+                        six.text_type(description),
+                    ]
+                )
         object_info = {
-            'columns': column_names,
-            'rows': rows,
-            'index_descriptor': index_descriptor,
-            'description': 'Dict (length {})'.format(len(target))
+            "columns": column_names,
+            "rows": rows,
+            "index_descriptor": index_descriptor,
+            "description": "Dict (length {})".format(len(target)),
         }
         return object_info
 
@@ -213,17 +215,17 @@ class DictHandler(BaseObjectHandler):
         if isinstance(accessor_pair[1], six.string_types):
             path_addition = '"{}"'.format(accessor_pair[1])
         else:
-            path_addition = '{}'.format(accessor_pair[1])
-        return (
-            target[accessor_pair[1]], self.path_modifier.format(path_addition))
+            path_addition = "{}".format(accessor_pair[1])
+        return (target[accessor_pair[1]], self.path_modifier.format(path_addition))
 
 
 class GenericClassHandler(BaseObjectHandler):
     """Object handler for any generic object, with functionality for
     optionally delving into the private methods/attributes of objects.
     """
-    index_descriptor = 'attr index'
-    path_modifier = '.{}'
+
+    index_descriptor = "attr index"
+    path_modifier = ".{}"
     _builtin_types = (int, float, bool, str, type(None))
 
     def check_applies(self, target):
@@ -244,25 +246,25 @@ class GenericClassHandler(BaseObjectHandler):
         object_info = {}
         props = [prop for prop in _dir(target)]
         if not self.verbose:
-            props = [prop for prop in props if not prop.startswith('_')]
+            props = [prop for prop in props if not prop.startswith("_")]
         index_prop_map = {i: k for i, k in enumerate(props)}
         self._add_property_map(target, index_prop_map)
         if len(props) == 0:
-            object_info['columns'] = ['Attribute']
+            object_info["columns"] = ["Attribute"]
             rows = [[six.text_type(target)]]
-            object_info['has_children'] = False
-            object_info['index_descriptor'] = None
+            object_info["has_children"] = False
+            object_info["index_descriptor"] = None
         else:
-            object_info['columns'] = ['Idx', 'Attribute', 'Data']
-            object_info['index_descriptor'] = self.index_descriptor
+            object_info["columns"] = ["Idx", "Attribute", "Data"]
+            object_info["index_descriptor"] = self.index_descriptor
             rows = []
             for i, prop in enumerate(props):
                 attr = getattr(target, prop)
                 description = _get_object_description(attr)
                 rows.append(
-                    [six.text_type(i), six.text_type(prop),
-                     six.text_type(description)])
-        object_info['rows'] = rows
+                    [six.text_type(i), six.text_type(prop), six.text_type(description)]
+                )
+        object_info["rows"] = rows
         return object_info
 
     def _object_accessor(self, target, inp):
@@ -281,6 +283,8 @@ class GenericClassHandler(BaseObjectHandler):
 
 
 class ValueHandler(BaseObjectHandler):
+    """Basic handler for single values"""
+
     has_children = False
 
     def check_applies(self, target):
@@ -296,21 +300,21 @@ class ValueHandler(BaseObjectHandler):
         :rtype: ``dict``
         """
         object_info = {}
-        object_info['columns'] = ['Value']
+        object_info["columns"] = ["Value"]
         if target is None:
-            description = six.text_type('None')
+            description = six.text_type("None")
         else:
             description = six.text_type(target)
-        object_info['rows'] = [[description]]
+        object_info["rows"] = [[description]]
         return object_info
 
 
 def _get_object_description(target):
     """Return a string describing the *target*"""
     if isinstance(target, list):
-        data = '<list, length {}>'.format(len(target))
+        data = "<list, length {}>".format(len(target))
     elif isinstance(target, dict):
-        data = '<dict, length {}>'.format(len(target))
+        data = "<dict, length {}>".format(len(target))
     else:
         data = target
     return data

@@ -1,18 +1,18 @@
 """Module containing tests for the delver tool"""
 import unittest
-
-import mock
+from unittest import mock
 
 from context import core as mod_ut
 
 
 class TestDelveFunctional(unittest.TestCase):
     """Functional tests for the delver tool"""
+
     def setUp(self):
         """Initialize frequently used test objects"""
-        self.test_obj = {'foo': ['bar', {'baz': 3}]}
-        print_patch = mock.patch('delver.core.six.print_')
-        input_patch = mock.patch('delver.core.six_input')
+        self.test_obj = {"foo": ["bar", {"baz": 3}]}
+        print_patch = mock.patch("delver.core.six.print_")
+        input_patch = mock.patch("delver.core.six_input")
         self.fake_print = print_patch.start()
         self.fake_input = input_patch.start()
         self.addCleanup(print_patch.stop)
@@ -33,164 +33,168 @@ class TestDelveFunctional(unittest.TestCase):
 
     def test_single_navigate(self):
         """Test a single navigation and exit"""
-        self.fake_input.side_effect = [
-            '0',
-            'q'
-        ]
+        self.fake_input.side_effect = ["0", "q"]
         target_print_args = [
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-            'At path: root\n'
-            'Dict (length 1)\n'
-            '+-----+-----+------------------+\n'
-            '| Idx | Key | Data             |\n'
-            '+-----+-----+------------------+\n'
-            '| 0   | foo | <list, length 2> |\n'
-            '+-----+-----+------------------+'),
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-            'At path: root["foo"]\n'
-            'List (length 2)\n'
-            '+-----+------------------+\n'
-            '| Idx | Data             |\n'
-            '+-----+------------------+\n'
-            '| 0   | bar              |\n'
-            '| 1   | <dict, length 1> |\n'
-            '+-----+------------------+'),
-            'Bye.'
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                "At path: root\n"
+                "Dict (length 1)\n"
+                "+-----+-----+------------------+\n"
+                "| Idx | Key | Data             |\n"
+                "+-----+-----+------------------+\n"
+                "| 0   | foo | <list, length 2> |\n"
+                "+-----+-----+------------------+"
+            ),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                'At path: root["foo"]\n'
+                "List (length 2)\n"
+                "+-----+------------------+\n"
+                "| Idx | Data             |\n"
+                "+-----+------------------+\n"
+                "| 0   | bar              |\n"
+                "| 1   | <dict, length 1> |\n"
+                "+-----+------------------+"
+            ),
+            "Bye.",
         ]
         mod_ut.Delver(self.test_obj).run()
-        result_print_args = self._extract_print_strings(
-            self.fake_print.call_args_list)
+        result_print_args = self._extract_print_strings(self.fake_print.call_args_list)
         self.assertListEqual(result_print_args, target_print_args)
 
     def test_invalid_key_index(self):
         """Test an invalid index message is displayed"""
-        self.fake_input.side_effect = [
-            '1',
-            'q'
-        ]
+        self.fake_input.side_effect = ["1", "q"]
         target_print_args = [
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-            'At path: root\n'
-            'Dict (length 1)\n'
-            '+-----+-----+------------------+\n'
-            '| Idx | Key | Data             |\n'
-            '+-----+-----+------------------+\n'
-            '| 0   | foo | <list, length 2> |\n'
-            '+-----+-----+------------------+'),
-            'Invalid Index',
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-            'At path: root\n'
-            'Dict (length 1)\n'
-            '+-----+-----+------------------+\n'
-            '| Idx | Key | Data             |\n'
-            '+-----+-----+------------------+\n'
-            '| 0   | foo | <list, length 2> |\n'
-            '+-----+-----+------------------+'),
-            'Bye.'
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                "At path: root\n"
+                "Dict (length 1)\n"
+                "+-----+-----+------------------+\n"
+                "| Idx | Key | Data             |\n"
+                "+-----+-----+------------------+\n"
+                "| 0   | foo | <list, length 2> |\n"
+                "+-----+-----+------------------+"
+            ),
+            "Invalid Index",
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                "At path: root\n"
+                "Dict (length 1)\n"
+                "+-----+-----+------------------+\n"
+                "| Idx | Key | Data             |\n"
+                "+-----+-----+------------------+\n"
+                "| 0   | foo | <list, length 2> |\n"
+                "+-----+-----+------------------+"
+            ),
+            "Bye.",
         ]
 
         mod_ut.Delver(self.test_obj).run()
-        result_print_args = self._extract_print_strings(
-            self.fake_print.call_args_list)
+        result_print_args = self._extract_print_strings(self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
 
     def test_invalid_command(self):
         """Test an invalid command message is displayed"""
-        self.fake_input.side_effect = [
-            'blah',
-            'q'
-        ]
+        self.fake_input.side_effect = ["blah", "q"]
         mod_ut.Delver(self.test_obj).run()
         target_print_args = [
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root\n'
-             'Dict (length 1)\n'
-             '+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                "At path: root\n"
+                "Dict (length 1)\n"
+                "+-----+-----+------------------+\n"
+                "| Idx | Key | Data             |\n"
+                "+-----+-----+------------------+\n"
+                "| 0   | foo | <list, length 2> |\n"
+                "+-----+-----+------------------+"
+            ),
             "Invalid command; please specify one of ['<key index>', u, q]",
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root\n'
-             'Dict (length 1)\n'
-             '+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
-            'Bye.'
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                "At path: root\n"
+                "Dict (length 1)\n"
+                "+-----+-----+------------------+\n"
+                "| Idx | Key | Data             |\n"
+                "+-----+-----+------------------+\n"
+                "| 0   | foo | <list, length 2> |\n"
+                "+-----+-----+------------------+"
+            ),
+            "Bye.",
         ]
 
-        result_print_args = self._extract_print_strings(
-            self.fake_print.call_args_list)
+        result_print_args = self._extract_print_strings(self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
 
     def test_advanced_navigation(self):
         """Test navigating deeper into a data structure and back out"""
-        self.fake_input.side_effect = [
-            '0',
-            '1',
-            '0',
-            'u',
-            '0',
-            'q'
-        ]
+        self.fake_input.side_effect = ["0", "1", "0", "u", "0", "q"]
         mod_ut.Delver(self.test_obj).run()
         target_print_args = [
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root\n'
-             'Dict (length 1)\n'
-             '+-----+-----+------------------+\n'
-             '| Idx | Key | Data             |\n'
-             '+-----+-----+------------------+\n'
-             '| 0   | foo | <list, length 2> |\n'
-             '+-----+-----+------------------+'),
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root["foo"]\n'
-             'List (length 2)\n'
-             '+-----+------------------+\n'
-             '| Idx | Data             |\n'
-             '+-----+------------------+\n'
-             '| 0   | bar              |\n'
-             '| 1   | <dict, length 1> |\n'
-             '+-----+------------------+'),
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root["foo"][1]\n'
-             'Dict (length 1)\n'
-             '+-----+-----+------+\n'
-             '| Idx | Key | Data |\n'
-             '+-----+-----+------+\n'
-             '| 0   | baz | 3    |\n'
-             '+-----+-----+------+'),
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root["foo"][1]["baz"]\n'
-             '+-------+\n'
-             '| Value |\n'
-             '+-------+\n'
-             '| 3     |\n'
-             '+-------+'),
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root["foo"][1]\n'
-             'Dict (length 1)\n'
-             '+-----+-----+------+\n'
-             '| Idx | Key | Data |\n'
-             '+-----+-----+------+\n'
-             '| 0   | baz | 3    |\n'
-             '+-----+-----+------+'),
-            (mod_ut.DEFAULT_DIVIDER + '\n'
-             'At path: root["foo"][1]["baz"]\n'
-             '+-------+\n'
-             '| Value |\n'
-             '+-------+\n'
-             '| 3     |\n'
-             '+-------+'),
-            'Bye.'
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                "At path: root\n"
+                "Dict (length 1)\n"
+                "+-----+-----+------------------+\n"
+                "| Idx | Key | Data             |\n"
+                "+-----+-----+------------------+\n"
+                "| 0   | foo | <list, length 2> |\n"
+                "+-----+-----+------------------+"
+            ),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                'At path: root["foo"]\n'
+                "List (length 2)\n"
+                "+-----+------------------+\n"
+                "| Idx | Data             |\n"
+                "+-----+------------------+\n"
+                "| 0   | bar              |\n"
+                "| 1   | <dict, length 1> |\n"
+                "+-----+------------------+"
+            ),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                'At path: root["foo"][1]\n'
+                "Dict (length 1)\n"
+                "+-----+-----+------+\n"
+                "| Idx | Key | Data |\n"
+                "+-----+-----+------+\n"
+                "| 0   | baz | 3    |\n"
+                "+-----+-----+------+"
+            ),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                'At path: root["foo"][1]["baz"]\n'
+                "+-------+\n"
+                "| Value |\n"
+                "+-------+\n"
+                "| 3     |\n"
+                "+-------+"
+            ),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                'At path: root["foo"][1]\n'
+                "Dict (length 1)\n"
+                "+-----+-----+------+\n"
+                "| Idx | Key | Data |\n"
+                "+-----+-----+------+\n"
+                "| 0   | baz | 3    |\n"
+                "+-----+-----+------+"
+            ),
+            (
+                mod_ut.DEFAULT_DIVIDER + "\n"
+                'At path: root["foo"][1]["baz"]\n'
+                "+-------+\n"
+                "| Value |\n"
+                "+-------+\n"
+                "| 3     |\n"
+                "+-------+"
+            ),
+            "Bye.",
         ]
-        result_print_args = self._extract_print_strings(
-            self.fake_print.call_args_list)
+        result_print_args = self._extract_print_strings(self.fake_print.call_args_list)
         self.assertEqual(result_print_args, target_print_args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

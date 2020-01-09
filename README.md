@@ -1,10 +1,50 @@
 # Delver
 
+[![](https://img.shields.io/pypi/v/pydelver.svg)](https://pypi.org/pypi/pydelver/) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 The Delver tool allows for the visual exploration of nested objects, which can
 be useful for coming to grips with unfamiliar data or learning the structure of
 a new codebase. In particular, this package exposes a command line tool `delve`
 as well as a Python library which can be used to understand JSON structures
 and arbitrary Python objects.
+
+Features:
+
+- Command line tool for exploring JSON data
+- Support for interactive exploration of Python objects within debugger
+
+Table of Contents:
+
+- [Installation](#getting-started)
+- [Guide](#guide)
+- [Development](#development)
+
+# Getting Started
+
+## Requirements
+
+The `delve` tool requires that Python is installed as well as the `six` package (taken
+care of via the installation method below), which allows for compatibility between Python 2
+and Python 3.
+
+Specifically, `delve` has been tested with Python versions 2.7.8 and 3.7.2.
+
+## Installation
+
+Simply install via `pip`:
+
+```
+$  pip install pydelver
+```
+
+This exposes the `delve` command line script (which corresponds to the
+`delver.delve:main` function).
+
+Note that any transform functions should be either installed in the current
+python interpreter's site-packages or should be available in local scope.
+
+
+# Guide
 
 ## Command Line Tool
 
@@ -157,14 +197,14 @@ At path: root
 Moving through the hierarchy, then, enables quickly understanding all the parts
 that make up the unfamiliar library.
 
-# Advanced Features
+## Advanced Features
 
 This tool is typically used to look through large JSON payloads where seeing
 the entirety of the file in a text editor or on a web page is
 unwieldy/inconvenient. The advanced features allow for simplifying payloads or making
 them easier to navigate and explore.
 
-## Specifying a Data Transform from the Command Line
+### Specifying a Data Transform from the Command Line
 
 The ``delve`` script allows for the ability to specify a 'transform' step to
 be applied before the data is actually explored. This might be used in the case
@@ -255,31 +295,6 @@ Dict (length 2)
 
 And now we don't have to see those annoying company ids when exploring our data!
 
-# Getting Started
-
-## Requirements
-
-The `delve` tool requires that Python is installed as well as the `six` package (taken
-care of via the installation method below), which allows for compatibility between Python 2
-and Python 3.
-
-Specifically, `delve` has been tested with Python versions 2.7.8 and 3.6.8.
-
-## Installation
-
-Simply install via `pip`:
-
-```
-$  pip install pydelver
-```
-
-This exposes the `delve` command line script (which corresponds to the
-`delver.delve:main` function).
-
-Note that any transform functions should be either installed in the current
-python interpreter's site-packages or should be available in local scope.
-
-
 # Development
 
 Setting up the development environment does not vary between python versions. See the
@@ -298,33 +313,17 @@ $ cd delver
 ## Running Tests
 
 When doing development, the tests can be executed by using
-[pytest](http://docs.pytest.org/en/latest/getting-started.html).
+[tox](https://tox.readthedocs.io/en/latest/).
 
 First install the package requirements as well as the test-specific requirements:
 
-```
-$ pip install -r requirements.txt
-$ pip install -r test_requirements.txt
-```
-
-Next you need to make sure your `PYTHONPATH` includes the source code:
-
-```
-$ export PYTHONPATH=`pwd`/src
+```bash
+pip install pre-commit tox
+pre-commit install
 ```
 
-Then executing the tests just involves running the `pytest` command:
+Then executing the tests just involves running:
 
-```
-$ pytest tests
-============================= test session starts ==============================
-platform darwin -- Python 2.7.8, pytest-3.0.6, py-1.4.32, pluggy-0.4.0
-rootdir: /Users/nscience/delver, inifile:
-collected 27 items
-
-tests/test_core.py .....
-tests/test_functional.py ....
-tests/test_handlers.py ..................
-
-=========================== 27 passed in 0.11 seconds ===========================
+```bash
+tox
 ```
