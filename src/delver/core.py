@@ -4,14 +4,11 @@ from collections import namedtuple, OrderedDict
 import six
 from six.moves import input as six_input
 
+from delver.exceptions import DelverInputError, ObjectHandlerInputValidationError
+from delver.handlers import DictHandler, GenericClassHandler, ListHandler, ValueHandler
 from delver.table import TablePrinter
-from delver.handlers import (
-    ListHandler, DictHandler, GenericClassHandler, ValueHandler)
-from delver.exceptions import (
-    ObjectHandlerInputValidationError, DelverInputError)
 
-
-DEFAULT_DIVIDER = '-' * 79
+DEFAULT_DIVIDER = "-" * 79
 
 
 class Delver(object):
@@ -24,7 +21,10 @@ class Delver(object):
     """
 
     object_handler_classes = [
-        ListHandler, DictHandler, GenericClassHandler, ValueHandler
+        ListHandler,
+        DictHandler,
+        GenericClassHandler,
+        ValueHandler,
     ]
 
     def __init__(self, target, verbose=False, use_colors=False):
@@ -44,8 +44,8 @@ class Delver(object):
         # a 'path' attribute which is a list of object accessor strings
         # (like '["foo"]', '[0]'), and a 'previous' attribute which is just
         # a pointer to the previous object
-        self._path = namedtuple('path', ['path', 'previous'])
-        self._path.path = ['root']
+        self._path = namedtuple("path", ["path", "previous"])
+        self._path.path = ["root"]
         self._path.previous = []
 
         # The indicator for whether or not to continue program flow
@@ -54,8 +54,8 @@ class Delver(object):
         # An ordered mapping of possible user input commands to the function to
         # use if that input is selected
         self._basic_input_map = OrderedDict()
-        self._basic_input_map['u'] = self._navigate_up
-        self._basic_input_map['q'] = self._quit
+        self._basic_input_map["u"] = self._navigate_up
+        self._basic_input_map["q"] = self._quit
 
         # Whether or not to allow object handlers to be verbose
         self._verbose = verbose
@@ -82,11 +82,11 @@ class Delver(object):
         :returns: the prompt to be given to the user for input
         :rtype: ``str``
         """
-        basic_inputs = ', '.join(self._basic_input_map.keys())
+        basic_inputs = ", ".join(self._basic_input_map.keys())
         if index_descriptor is not None:
-            prompt = '[<{}>, {}] --> '.format(index_descriptor, basic_inputs)
+            prompt = "[<{}>, {}] --> ".format(index_descriptor, basic_inputs)
         else:
-            prompt = '[{}] --> '.format(basic_inputs)
+            prompt = "[{}] --> ".format(basic_inputs)
         return prompt
 
     def run(self):
@@ -108,15 +108,15 @@ class Delver(object):
                         object_info = object_handler.describe(target)
                         table.build_from_info(object_info)
                         prompt = self._build_prompt(
-                            index_descriptor=object_info.get('index_descriptor'))
+                            index_descriptor=object_info.get("index_descriptor")
+                        )
                         break
 
-                self.print_table(
-                    table, description=object_info.get('description'))
+                self.print_table(table, description=object_info.get("description"))
                 inp = six_input(str(prompt))
                 target = self._handle_input(inp, target, object_handler)
         except (KeyboardInterrupt, EOFError):
-            self.print_message('\nBye.')
+            self.print_message("\nBye.")
 
     def print_table(self, table, description=None):
         """Prints the table and other supporting information for the view.
@@ -134,11 +134,11 @@ class Delver(object):
         view = []
         view.append(DEFAULT_DIVIDER)
         if len(self._path.path) > 0:
-            view.append('At path: {}'.format(''.join(self._path.path)))
+            view.append("At path: {}".format("".join(self._path.path)))
         if description is not None:
             view.append(description)
         view.append(str(table))
-        six.print_('\n'.join(view))
+        six.print_("\n".join(view))
 
     def print_message(self, message):
         """Prints a generic message, generally either a warning or error"""
@@ -152,8 +152,7 @@ class Delver(object):
         """
         instantiated_object_handlers = []
         for handler_class in self.object_handler_classes:
-            instantiated_object_handlers.append(
-                handler_class(verbose=self._verbose))
+            instantiated_object_handlers.append(handler_class(verbose=self._verbose))
         return instantiated_object_handlers
 
     def _navigate_up(self, target):
@@ -172,14 +171,14 @@ class Delver(object):
 
     def _quit(self, target):
         """End the primary program flow."""
-        self.print_message('Bye.')
+        self.print_message("Bye.")
         self._continue_running = False
 
     def _handle_input(self, inp, target, object_handler):
         """Coordinate performing actions based on the user input.
 
-        Checks the *inp* against the basic functions first, then attempts to use
-        the *object_handler*'s own input handler.
+        Checks the *inp* against the basic functions first, then attempts to
+        use the *object_handler*'s own input handler.
 
         :param inp: the user-given input
         :type inp: ``str``
@@ -200,11 +199,11 @@ class Delver(object):
                 target, new_path = object_handler.handle_input(target, inp)
             except ObjectHandlerInputValidationError as err:
                 self.print_message(err.msg)
-            except DelverInputError as err:
-                msg = (
-                    "Invalid command; please specify one of ['<{}>', {}]".format(
-                        object_handler.index_descriptor,
-                        ', '.join(self._basic_input_map.keys())))
+            except DelverInputError:
+                msg = ("Invalid command; please specify" " one of ['<{}>', {}]").format(
+                    object_handler.index_descriptor,
+                    ", ".join(self._basic_input_map.keys()),
+                )
                 self.print_message(msg)
             if new_path is not None:
                 self._path.previous.append(old_target)

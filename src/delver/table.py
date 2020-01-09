@@ -2,8 +2,9 @@
 from textwrap import fill
 
 import colorful
-colorful.use_style('solarized')
 from terminaltables import AsciiTable
+
+colorful.use_style("solarized")
 
 
 MAX_COLUMN_WIDTH = 80
@@ -13,6 +14,7 @@ DEFAULT_COLUMN_COLORS = [colorful.yellow, colorful.blue, colorful.green]
 
 class TablePrinter(object):
     """Wrapper class around the terminaltables' :py:class:`AsciiTable`"""
+
     def __init__(self, use_colors=True):
         """Initialize an empty table"""
         self.table = AsciiTable([])
@@ -42,7 +44,7 @@ class TablePrinter(object):
         :type table_info: ``dict``
         """
         final_rows = []
-        for row in table_info['rows']:
+        for row in table_info["rows"]:
             new_row = []
             for column_index, cell in enumerate(row):
                 new_cell = fill(cell, MAX_COLUMN_WIDTH)
@@ -50,7 +52,7 @@ class TablePrinter(object):
                     new_cell = _style_cell(new_cell, column_index)
                 new_row.append(new_cell)
             final_rows.append(new_row)
-        headers = table_info['columns']
+        headers = table_info["columns"]
         if self.use_colors:
             headers = _style_headers(headers)
         self.table = AsciiTable([headers] + final_rows)
@@ -65,8 +67,10 @@ def _style_headers(headers):
     :returns: list of header strings that have been styled
     :rtype: ``list`` of ``str``
     """
-    return [colorful.bold & DEFAULT_COLUMN_COLORS[i] | header
-            for i, header in enumerate(headers)]
+    return [
+        colorful.bold & DEFAULT_COLUMN_COLORS[i] | header
+        for i, header in enumerate(headers)
+    ]
 
 
 def _style_cell(cell, column_index):
@@ -80,17 +84,16 @@ def _style_cell(cell, column_index):
     :returns: a styled cell string
     :rtype: ``str``
     """
-    segments = cell.split('\n')
+    segments = cell.split("\n")
     if len(segments) == 1:
         return DEFAULT_COLUMN_COLORS[column_index] | cell
 
     # Need to apply the coloring to each segment separately to prevent
     # terminaltables from incorrectly coloring the table border characters
-    segments = [
-        DEFAULT_COLUMN_COLORS[column_index] | segment for segment in segments]
+    segments = [DEFAULT_COLUMN_COLORS[column_index] | segment for segment in segments]
 
     # Concat the segments back together (colorful objects don't support `join`)
-    new_cell = ''
+    new_cell = ""
     for segment in segments:
         new_cell += segment
     return new_cell
