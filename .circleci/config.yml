@@ -1,19 +1,38 @@
 version: 2.1
 
+commands:
+  install-deps:
+    description: Install dependencies using pre-commit
+    name: Install Requirements
+    steps:
+      - command: |
+          pip install pre-commit tox flit
+          pre-commit install
+
 jobs:
-  build_and_test:
+  build:
     docker:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - run:
-          command: |
-            pip install pre-commit tox
-            pre-commit install
-          name: Install Requirements
+      - install-deps
       - run: tox
+  deploy:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - install-deps
+      - command: |
+          FLIT_USERNAME=narrativescience FLIT_PASSWORD=$PYPI_PASSWORD flit publish
 
 workflows:
-  main:
+  build_and_deploy:
     jobs:
-      - build_and_test
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
