@@ -3,7 +3,6 @@ version: 2.1
 commands:
   install-deps:
     description: Install dependencies using pre-commit
-    name: Install Requirements
     steps:
       - command: |
           pip install pre-commit tox flit
