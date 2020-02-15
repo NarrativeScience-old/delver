@@ -4,9 +4,11 @@ commands:
   install-deps:
     description: Install dependencies using pre-commit
     steps:
-      - run: |
-          pip install pre-commit tox flit
-          pre-commit install
+      - run:
+          command: |
+            pip install pre-commit tox flit
+            pre-commit install
+          name: Install dependencies
 
 jobs:
   build:
@@ -21,14 +23,18 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - install-deps
-      - run: |
-          FLIT_USERNAME=$PYPI_USERNAME FLIT_PASSWORD=$PYPI_PASSWORD flit publish
+      - run:
+          command: |
+            FLIT_USERNAME=$PYPI_USERNAME FLIT_PASSWORD=$PYPI_PASSWORD flit publish
+          name: Publish to Pypi
 
 workflows:
   build_and_deploy:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /.*/
       - deploy:
           requires:
             - build

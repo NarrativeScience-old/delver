@@ -1,6 +1,6 @@
 # Delver
 
-[![](https://img.shields.io/pypi/v/pydelver.svg)](https://pypi.org/pypi/pydelver/) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)[![CircleCI](https://circleci.com/gh/NarrativeScience/delver/tree/master.svg?style=shield)](https://circleci.com/gh/NarrativeScience/delver/tree/master)
+[![CircleCI](https://circleci.com/gh/NarrativeScience/delver/tree/master.svg?style=shield)](https://circleci.com/gh/NarrativeScience/delver/tree/master) [![](https://img.shields.io/pypi/v/pydelver.svg)](https://pypi.org/pypi/pydelver/) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 The Delver tool allows for the visual exploration of nested objects, which can
 be useful for coming to grips with unfamiliar data or learning the structure of
