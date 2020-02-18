@@ -44,7 +44,11 @@ jobs:
 workflows:
   pull_request:
     jobs:
-      - test
+      - test:
+          filters:
+            branches:
+              ignore:
+                - master
   publish:
     jobs:
       - publish:
