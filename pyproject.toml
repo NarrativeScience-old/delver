@@ -4,6 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
 module = "delver"
+dist-name = "pydelver"
 author = "Alex Sippel"
 author-email = "asippel@narrativescience.com"
 home-page = "https://github.com/NarrativeScience/delver"
