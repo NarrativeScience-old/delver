@@ -1,8 +1,11 @@
 version: 2.1
 
+orbs:
+  ghpr: narrativescience/ghpr@0.0.5
+
 commands:
   install-deps:
-    description: Install dependencies using pre-commit
+    description: Install dependencies and initialize pre-commit hooks
     steps:
       - run:
           command: |
@@ -11,34 +14,37 @@ commands:
           name: Install dependencies
 
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/python:3.7
     steps:
-      - checkout
+      - ghpr/build-prospective-branch
       - install-deps
+      - run: pre-commit run --show-diff-on-failure
       - run: tox
-  deploy:
+      - run: flit build
+      - ghpr/post-pr-comment:
+          comment: Tests failed!
+          when: on_fail
+  publish:
     docker:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - install-deps
-      - run:
-          command: |
-            FLIT_USERNAME=$PYPI_USERNAME FLIT_PASSWORD=$PYPI_PASSWORD flit publish
-          name: Publish to Pypi
+      - run: pip install flit
+      - run: flit build
+      - run: flit publish
 
 workflows:
-  build_and_deploy:
+  pull_request:
     jobs:
-      - build:
+      - test:
           filters:
             tags:
               only: /.*/
-      - deploy:
-          requires:
-            - build
+  publish:
+    jobs:
+      - publish:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)*/
