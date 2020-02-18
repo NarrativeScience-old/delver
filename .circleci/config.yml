@@ -12,19 +12,6 @@ commands:
             pip install pre-commit tox flit
             pre-commit install
           name: Install dependencies
-  get-target-branch:
-    # This is a workaround until CircleCI implements a feature for exposing the
-    # target branch of a pull request. See https://ideas.circleci.com/ideas/CCI-I-894
-    # for more information.
-    description: Get target branch
-    steps:
-      - run:
-          name: Get target branch
-          command: |
-            url="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}"
-            target_branch=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$url" | jq '.base.ref' | tr -d '"')
-            echo "$target_branch"
-            echo "export TARGET_BRANCH=$target_branch" >> $BASH_ENV
 
 jobs:
   test:
@@ -32,7 +19,8 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - ghpr/build-prospective-branch
-      - get-target-branch
+      - ghpr/get-pr-number
+      - ghpr/get-target-branch
       - install-deps
       - run:
           name: Run commit hooks
