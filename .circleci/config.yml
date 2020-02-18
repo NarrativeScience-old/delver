@@ -19,14 +19,12 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - ghpr/build-prospective-branch
-      - ghpr/get-pr-number
-      - ghpr/get-target-branch
       - install-deps
       - run:
           name: Run commit hooks
           command: |
             pre-commit run \
-              --source "origin/${TARGET_BRANCH}" \
+              --source "origin/${GITHUB_PR_BASE_BRANCH}" \
               --origin "origin/${CIRCLE_BRANCH}" \
               --show-diff-on-failure
       - run: tox
