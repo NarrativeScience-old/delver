@@ -54,8 +54,8 @@ class TestListHandler(unittest.TestCase):
         input_list = [{"foo": "bar"}, True, (0.3, 100)]
 
         target = {
-            "columns": ["Idx", "Date"],
-            "description": "List (length 3)",
+            "columns": ["Idx", "Data"],
+            "description": "Listz (length 3)",
             "index_descriptor": "int",
             "rows": [["0", "<dict, length 1>"], ["1", "True"], ["2", "(0.3, 100)"]],
         }
